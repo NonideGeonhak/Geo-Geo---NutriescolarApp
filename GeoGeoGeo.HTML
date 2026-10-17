@@ -1,0 +1,1104 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NutriEscolar Pro - Gestión Nutricional e Inventario</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <!-- Firebase App (Compat) SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: { 50: '#f0fdf4', 100: '#dcfce7', 500: '#22c55e', 600: '#16a34a', 700: '#15803d' }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- ESTILOS EXCLUSIVOS PARA IMPRESIÓN (REPORTES OFICIALES) -->
+  <style>
+    @media print {
+
+      /* Ocultar elementos de navegación y UI no imprimibles */
+      #auth-screen,
+      header,
+      nav,
+      button,
+      .no-print,
+      .actions-column {
+        display: none !important;
+      }
+
+      body {
+        background: white !important;
+        color: black !important;
+        font-size: 12pt;
+      }
+
+      #app-screen {
+        display: block !important;
+      }
+
+      main {
+        padding: 0 !important;
+        max-width: 100% !important;
+      }
+
+      /* Mostrar encabezado de reporte oficial al imprimir */
+      .print-header {
+        display: block !important;
+        text-align: center;
+        border-bottom: 2px solid #000;
+        padding-bottom: 12px;
+        margin-bottom: 20px;
+      }
+
+      table {
+        width: 100% !important;
+        border-collapse: collapse !important;
+        margin-top: 15px;
+      }
+
+      th,
+      td {
+        border: 1px solid #000 !important;
+        padding: 8px !important;
+        text-align: left !important;
+        font-size: 10pt !important;
+      }
+
+      th {
+        background-color: #f2f2f2 !important;
+        font-weight: bold !important;
+      }
+
+      .print-footer {
+        display: block !important;
+        margin-top: 40px;
+        display: flex !important;
+        justify-content: space-between;
+      }
+
+      .signature-box {
+        border-top: 1px solid #000;
+        width: 40%;
+        text-align: center;
+        padding-top: 5px;
+        font-size: 9pt;
+      }
+    }
+
+    .print-header,
+    .print-footer {
+      display: none;
+    }
+  </style>
+</head>
+
+<body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex flex-col">
+
+  <!-- PANTALLA DE AUTENTICACIÓN / CONFIGURACIÓN FIREBASE -->
+  <div id="auth-screen"
+    class="fixed inset-0 z-50 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 overflow-y-auto max-h-[90vh]">
+      <div class="text-center mb-6">
+        <div
+          class="inline-flex items-center justify-center w-16 h-16 bg-brand-100 text-brand-600 rounded-full text-2xl mb-3 shadow-inner">
+          <i class="fa-solid fa-utensils"></i>
+        </div>
+        <h1 class="text-2xl font-bold text-slate-900">NutriEscolar Pro</h1>
+        <p class="text-sm text-slate-500 mt-1">Control Nutricional y Comedor Escolar (CNAE)</p>
+      </div>
+
+      <!-- Panel de Configuración de Credenciales Firebase -->
+      <div id="firebase-config-box" class="mb-6 p-4 bg-slate-50 border border-slate-200 rounded-xl">
+        <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2 flex items-center gap-1">
+          <i class="fa-solid fa-gear"></i> Configuración de Firebase
+        </h3>
+        <p class="text-xs text-slate-600 mb-3">Ingresa tus credenciales de Firebase para sincronizar en la nube, o pulsa
+          <strong>Modo Demo Local</strong> para probar el sistema sin instalar nada.
+        </p>
+        <div class="space-y-2">
+          <input type="text" id="cfg-apikey" placeholder="API Key (Ej: AIzaSy...)"
+            class="w-full text-xs p-2.5 border rounded border-slate-300">
+          <input type="text" id="cfg-projectid" placeholder="Project ID (Ej: nutriescolar-app)"
+            class="w-full text-xs p-2.5 border rounded border-slate-300">
+          <div class="flex gap-2 pt-1">
+            <button type="button" onclick="saveFirebaseConfig()"
+              class="flex-1 bg-slate-800 text-white text-xs py-2.5 rounded-lg font-medium hover:bg-slate-900 transition">Guardar
+              Credenciales</button>
+            <button type="button" onclick="enableDemoMode()"
+              class="flex-1 bg-brand-600 text-white text-xs py-2.5 rounded-lg font-medium hover:bg-brand-700 transition">Modo
+              Demo Local</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Formulario Login / Registro -->
+      <div id="auth-forms-container">
+        <div class="flex border-b border-slate-200 mb-6">
+          <button type="button" id="tab-login" onclick="switchAuthTab('login')"
+            class="flex-1 pb-3 text-sm font-semibold text-brand-600 border-b-2 border-brand-600">Iniciar Sesión</button>
+          <button type="button" id="tab-register" onclick="switchAuthTab('register')"
+            class="flex-1 pb-3 text-sm font-medium text-slate-400">Crear Cuenta</button>
+        </div>
+
+        <!-- Form Login -->
+        <form id="form-login" onsubmit="handleLogin(event)" class="space-y-4">
+          <div>
+            <label class="block text-xs font-semibold uppercase text-slate-600 mb-1">Correo Electrónico</label>
+            <input type="email" id="login-email" required
+              class="w-full p-3 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:outline-none">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold uppercase text-slate-600 mb-1">Contraseña</label>
+            <input type="password" id="login-password" required
+              class="w-full p-3 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:outline-none">
+          </div>
+          <button type="submit"
+            class="w-full bg-brand-600 text-white py-3 rounded-lg font-semibold hover:bg-brand-700 transition shadow-lg shadow-brand-500/20">Entrar
+            al Sistema</button>
+        </form>
+
+        <!-- Form Register -->
+        <form id="form-register" onsubmit="handleRegister(event)" class="space-y-4 hidden">
+          <div>
+            <label class="block text-xs font-semibold uppercase text-slate-600 mb-1">Correo Electrónico</label>
+            <input type="email" id="reg-email" required
+              class="w-full p-3 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:outline-none">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold uppercase text-slate-600 mb-1">Contraseña (Mín. 6
+              caracteres)</label>
+            <input type="password" id="reg-password" required
+              class="w-full p-3 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:outline-none">
+          </div>
+          <button type="submit"
+            class="w-full bg-slate-900 text-white py-3 rounded-lg font-semibold hover:bg-slate-800 transition">Registrarse</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ENCABEZADO DE IMPRESIÓN OFICIAL (Visibilidad exclusiva @media print) -->
+  <div class="print-header">
+    <h1 style="font-size: 16pt; font-weight: bold; text-transform: uppercase;">Programa de Alimentación Escolar (CNAE)
+    </h1>
+    <h2 id="print-title" style="font-size: 13pt; font-weight: bold; margin-top: 4px;">Reporte Institucional</h2>
+    <p style="font-size: 9pt; margin-top: 2px;">Fecha de emisión: <span id="print-date"></span> | Usuario: <span
+        id="print-user"></span></p>
+  </div>
+
+  <!-- APLICACIÓN PRINCIPAL -->
+  <div id="app-screen" class="hidden flex-1 flex flex-col">
+    <!-- Barra Superior -->
+    <header
+      class="bg-white border-b border-slate-200 sticky top-0 z-40 px-6 py-4 flex items-center justify-between shadow-sm">
+      <div class="flex items-center gap-3">
+        <div
+          class="w-10 h-10 bg-brand-600 text-white rounded-xl flex items-center justify-center font-bold text-lg shadow-md">
+          <i class="fa-solid fa-wheat-awn"></i>
+        </div>
+        <div>
+          <h2 class="font-bold text-slate-900 leading-tight">NutriEscolar Pro</h2>
+          <p class="text-xs text-slate-500" id="user-display-email">Sesión activa</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-3">
+        <button type="button" onclick="logout()"
+          class="text-xs bg-rose-50 text-rose-600 font-semibold px-3 py-2 rounded-lg hover:bg-rose-100 transition flex items-center gap-1.5">
+          <i class="fa-solid fa-right-from-bracket"></i> Salir
+        </button>
+      </div>
+    </header>
+
+    <!-- Navegación por pestañas -->
+    <nav class="bg-white border-b border-slate-200 px-6 flex gap-8 overflow-x-auto">
+      <button type="button" onclick="switchTab('dashboard')" id="nav-dashboard"
+        class="py-4 text-sm font-semibold text-brand-600 border-b-2 border-brand-600 flex items-center gap-2">
+        <i class="fa-solid fa-chart-pie"></i> Dashboard
+      </button>
+      <button type="button" onclick="switchTab('estudiantes')" id="nav-estudiantes"
+        class="py-4 text-sm font-medium text-slate-500 hover:text-slate-800 flex items-center gap-2">
+        <i class="fa-solid fa-graduation-cap"></i> Estudiantes (5to Año)
+      </button>
+      <button type="button" onclick="switchTab('cocina')" id="nav-cocina"
+        class="py-4 text-sm font-medium text-slate-500 hover:text-slate-800 flex items-center gap-2">
+        <i class="fa-solid fa-kitchen-set"></i> Asistencia & Cocina
+      </button>
+      <button type="button" onclick="switchTab('inventario')" id="nav-inventario"
+        class="py-4 text-sm font-medium text-slate-500 hover:text-slate-800 flex items-center gap-2">
+        <i class="fa-solid fa-boxes-stacked"></i> Inventario Diarios
+      </button>
+    </nav>
+
+    <!-- Contenido de las Pestañas -->
+    <main class="flex-1 p-6 max-w-7xl mx-auto w-full space-y-6">
+
+      <!-- TAB: DASHBOARD -->
+      <section id="tab-content-dashboard" class="space-y-6">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-4">
+            <div
+              class="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-xl font-bold">
+              <i class="fa-solid fa-users"></i>
+            </div>
+            <div>
+              <p class="text-xs font-semibold text-slate-400 uppercase">Estudiantes 5to Año</p>
+              <h3 id="stat-estudiantes" class="text-2xl font-black text-slate-800">0</h3>
+            </div>
+          </div>
+          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-4">
+            <div
+              class="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center text-xl font-bold">
+              <i class="fa-solid fa-utensils"></i>
+            </div>
+            <div>
+              <p class="text-xs font-semibold text-slate-400 uppercase">Personal de Cocina</p>
+              <h3 id="stat-cocina" class="text-2xl font-black text-slate-800">0</h3>
+            </div>
+          </div>
+          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-4">
+            <div
+              class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl font-bold">
+              <i class="fa-solid fa-box"></i>
+            </div>
+            <div>
+              <p class="text-xs font-semibold text-slate-400 uppercase">Insumos Registrados</p>
+              <h3 id="stat-inventario" class="text-2xl font-black text-slate-800">0</h3>
+            </div>
+          </div>
+          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-4">
+            <div
+              class="w-12 h-12 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center text-xl font-bold">
+              <i class="fa-solid fa-heart-pulse"></i>
+            </div>
+            <div>
+              <p class="text-xs font-semibold text-slate-400 uppercase">IMC Promedio</p>
+              <h3 id="stat-imc" class="text-2xl font-black text-slate-800">0.0</h3>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+          <h3 class="font-bold text-slate-800 mb-4 flex items-center gap-2"><i
+              class="fa-solid fa-circle-info text-brand-600"></i> Resumen de Operatividad</h3>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm text-slate-600">
+            <div class="p-4 bg-brand-50 rounded-xl border border-brand-100">
+              <h4 class="font-bold text-brand-700 mb-1">Estatus Antropométrico</h4>
+              <p class="text-xs text-brand-900">Calculador automatizado de IMC con estándares OMS. Puedes editar los
+                datos en cualquier momento e imprimir las listas para los expedientes estudiantiles.</p>
+            </div>
+            <div class="p-4 bg-amber-50 rounded-xl border border-amber-100">
+              <h4 class="font-bold text-amber-700 mb-1">Asistencia de Procesadores</h4>
+              <p class="text-xs text-amber-900">Control de asistencia diaria del personal de cocina. Genera e imprime la
+                planilla de asistencia por fecha para respaldo institucional.</p>
+            </div>
+            <div class="p-4 bg-blue-50 rounded-xl border border-blue-100">
+              <h4 class="font-bold text-blue-700 mb-1">Auditoría de Inventario</h4>
+              <p class="text-xs text-blue-900">Ajusta o edita el stock de insumos secos, proteínas y vegetales e imprime
+                reportes diarios con firmas de validación.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB: ESTUDIANTES 5TO AÑO -->
+      <section id="tab-content-estudiantes" class="hidden space-y-6">
+        <div
+          class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+          <div>
+            <h3 class="text-lg font-bold text-slate-900">Registro Nutricional de Estudiantes (5to Año)</h3>
+            <p class="text-xs text-slate-500">Cálculo automatizado del Diagnóstico IMC OMS</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <button type="button" onclick="printReport('Estudiantes')"
+              class="bg-slate-800 hover:bg-slate-900 text-white font-semibold text-xs px-4 py-2.5 rounded-xl transition flex items-center gap-2 shadow-sm">
+              <i class="fa-solid fa-print"></i> Imprimir Reporte Nutricional
+            </button>
+            <button type="button" onclick="openStudentModal()"
+              class="bg-brand-600 hover:bg-brand-700 text-white font-semibold text-xs px-4 py-2.5 rounded-xl transition flex items-center gap-2 shadow-md shadow-brand-500/20">
+              <i class="fa-solid fa-user-plus"></i> Nuevo Estudiante
+            </button>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm text-slate-600">
+              <thead class="bg-slate-50 text-xs uppercase font-bold text-slate-500 border-b border-slate-200">
+                <tr>
+                  <th class="p-4">Estudiante & Cédula</th>
+                  <th class="p-4">Edad</th>
+                  <th class="p-4">Peso (kg)</th>
+                  <th class="p-4">Talla (m)</th>
+                  <th class="p-4">IMC</th>
+                  <th class="p-4">Diagnóstico OMS</th>
+                  <th class="p-4 text-right actions-column">Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="students-table-body" class="divide-y divide-slate-100">
+                <!-- Dinámico -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB: PERSONAL DE COCINA -->
+      <section id="tab-content-cocina" class="hidden space-y-6">
+        <div
+          class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+          <div>
+            <h3 class="text-lg font-bold text-slate-900">Personal de Cocina y Asistencia Diaria</h3>
+            <p class="text-xs text-slate-500">Gestión de turnos, certificados de salud y pase de lista</p>
+          </div>
+          <div class="flex flex-wrap items-center gap-3">
+            <div class="flex items-center gap-2 bg-slate-100 px-3 py-1.5 rounded-xl border border-slate-200 text-xs">
+              <label class="font-bold text-slate-600">Fecha:</label>
+              <input type="date" id="attendance-date" onchange="loadAllData()"
+                class="bg-transparent font-medium text-slate-800 focus:outline-none">
+            </div>
+            <button type="button" onclick="printReport('Cocina')"
+              class="bg-slate-800 hover:bg-slate-900 text-white font-semibold text-xs px-4 py-2.5 rounded-xl transition flex items-center gap-2 shadow-sm">
+              <i class="fa-solid fa-print"></i> Imprimir Planilla Asistencia
+            </button>
+            <button type="button" onclick="openKitchenModal()"
+              class="bg-brand-600 hover:bg-brand-700 text-white font-semibold text-xs px-4 py-2.5 rounded-xl transition flex items-center gap-2 shadow-md shadow-brand-500/20">
+              <i class="fa-solid fa-user-gear"></i> Registrar Personal
+            </button>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm text-slate-600">
+              <thead class="bg-slate-50 text-xs uppercase font-bold text-slate-500 border-b border-slate-200">
+                <tr>
+                  <th class="p-4">Nombre & Cédula</th>
+                  <th class="p-4">Turno</th>
+                  <th class="p-4">Certificado Salud</th>
+                  <th class="p-4">Asistencia Hoy</th>
+                  <th class="p-4 text-right actions-column">Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="kitchen-table-body" class="divide-y divide-slate-100">
+                <!-- Dinámico -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB: INVENTARIO -->
+      <section id="tab-content-inventario" class="hidden space-y-6">
+        <div
+          class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+          <div>
+            <h3 class="text-lg font-bold text-slate-900">Inventario Diario de Alimentos</h3>
+            <p class="text-xs text-slate-500">Stock de Rubros Secos, Proteínas y Hortalizas</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <button type="button" onclick="printReport('Inventario')"
+              class="bg-slate-800 hover:bg-slate-900 text-white font-semibold text-xs px-4 py-2.5 rounded-xl transition flex items-center gap-2 shadow-sm">
+              <i class="fa-solid fa-print"></i> Imprimir Reporte Inventario
+            </button>
+            <button type="button" onclick="openInventoryModal()"
+              class="bg-brand-600 hover:bg-brand-700 text-white font-semibold text-xs px-4 py-2.5 rounded-xl transition flex items-center gap-2 shadow-md shadow-brand-500/20">
+              <i class="fa-solid fa-plus"></i> Agregar Insumo
+            </button>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm text-slate-600">
+              <thead class="bg-slate-50 text-xs uppercase font-bold text-slate-500 border-b border-slate-200">
+                <tr>
+                  <th class="p-4">Nombre del Insumo</th>
+                  <th class="p-4">Categoría</th>
+                  <th class="p-4">Cantidad Stock</th>
+                  <th class="p-4">Unidad</th>
+                  <th class="p-4 text-right actions-column">Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="inventory-table-body" class="divide-y divide-slate-100">
+                <!-- Dinámico -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- FIRMAS PARA REPORTES IMPRESOS OFICIALES -->
+  <div class="print-footer">
+    <div class="signature-box">
+      <p><strong>Elaborado por:</strong></p>
+      <p style="margin-top: 30px;">Firma del Responsable Nutricional / Cocina</p>
+    </div>
+    <div class="signature-box">
+      <p><strong>Validado por:</strong></p>
+      <p style="margin-top: 30px;">Firma de la Dirección Escolar / CNAE</p>
+    </div>
+  </div>
+
+  <!-- MODAL ESTUDIANTE (Creación y Edición) -->
+  <div id="modal-student"
+    class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl">
+      <h3 id="student-modal-title" class="text-lg font-bold text-slate-900 mb-4">Registrar Estudiante</h3>
+      <form onsubmit="saveStudent(event)" class="space-y-4">
+        <input type="hidden" id="student-id">
+        <div>
+          <label class="block text-xs font-semibold uppercase text-slate-600 mb-1">Nombre Completo</label>
+          <input type="text" id="student-name" required class="w-full p-2.5 text-sm border border-slate-300 rounded-lg">
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold uppercase text-slate-600 mb-1">Cédula</label>
+            <input type="text" id="student-cedula" required
+              class="w-full p-2.5 text-sm border border-slate-300 rounded-lg">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold uppercase text-slate-600 mb-1">Edad (Años)</label>
+            <input type="number" id="student-edad" required min="10" max="25"
+              class="w-full p-2.5 text-sm border border-slate-300 rounded-lg">
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold uppercase text-slate-600 mb-1">Peso (kg)</label>
+            <input type="number" step="0.1" id="student-peso" required
+              class="w-full p-2.5 text-sm border border-slate-300 rounded-lg">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold uppercase text-slate-600 mb-1">Talla (m e.g. 1.70)</label>
+            <input type="number" step="0.01" id="student-talla" required
+              class="w-full p-2.5 text-sm border border-slate-300 rounded-lg">
+          </div>
+        </div>
+        <div class="flex justify-end gap-3 pt-4 border-t border-slate-100">
+          <button type="button" onclick="closeStudentModal()"
+            class="px-4 py-2 text-xs font-semibold bg-slate-100 text-slate-600 rounded-lg hover:bg-slate-200">Cancelar</button>
+          <button type="submit"
+            class="px-4 py-2 text-xs font-semibold bg-brand-600 text-white rounded-lg hover:bg-brand-700">Guardar
+            Cambios</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL COCINA (Creación y Edición) -->
+  <div id="modal-kitchen"
+    class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl">
+      <h3 id="kitchen-modal-title" class="text-lg font-bold text-slate-900 mb-4">Registrar Personal de Cocina</h3>
+      <form onsubmit="saveKitchen(event)" class="space-y-4">
+        <input type="hidden" id="kitchen-id">
+        <div>
+          <label class="block text-xs font-semibold uppercase text-slate-600 mb-1">Nombre Completo</label>
+          <input type="text" id="kitchen-name" required class="w-full p-2.5 text-sm border border-slate-300 rounded-lg">
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold uppercase text-slate-600 mb-1">Cédula</label>
+            <input type="text" id="kitchen-cedula" required
+              class="w-full p-2.5 text-sm border border-slate-300 rounded-lg">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold uppercase text-slate-600 mb-1">Turno</label>
+            <select id="kitchen-turno" class="w-full p-2.5 text-sm border border-slate-300 rounded-lg">
+              <option value="Mañana">Mañana</option>
+              <option value="Tarde">Tarde</option>
+              <option value="Completo">Completo</option>
+            </select>
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold uppercase text-slate-600 mb-1">Certificado de Salud</label>
+          <select id="kitchen-certificado" class="w-full p-2.5 text-sm border border-slate-300 rounded-lg">
+            <option value="Vigente">Vigente</option>
+            <option value="Vencido">Vencido</option>
+          </select>
+        </div>
+        <div class="flex justify-end gap-3 pt-4 border-t border-slate-100">
+          <button type="button" onclick="closeKitchenModal()"
+            class="px-4 py-2 text-xs font-semibold bg-slate-100 text-slate-600 rounded-lg hover:bg-slate-200">Cancelar</button>
+          <button type="submit"
+            class="px-4 py-2 text-xs font-semibold bg-brand-600 text-white rounded-lg hover:bg-brand-700">Guardar
+            Cambios</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL INVENTARIO (Creación y Edición) -->
+  <div id="modal-inventory"
+    class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl">
+      <h3 id="inventory-modal-title" class="text-lg font-bold text-slate-900 mb-4">Registrar Insumo de Alimentos</h3>
+      <form onsubmit="saveInventory(event)" class="space-y-4">
+        <input type="hidden" id="inventory-id">
+        <div>
+          <label class="block text-xs font-semibold uppercase text-slate-600 mb-1">Nombre del Rubro / Alimento</label>
+          <input type="text" id="inv-nombre" required placeholder="Ej: Harina de Maíz, Carne de Res, Tomate..."
+            class="w-full p-2.5 text-sm border border-slate-300 rounded-lg">
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold uppercase text-slate-600 mb-1">Categoría</label>
+            <select id="inv-categoria" class="w-full p-2.5 text-sm border border-slate-300 rounded-lg">
+              <option value="Rubros Secos">Rubros Secos</option>
+              <option value="Proteína">Proteína</option>
+              <option value="Verdura / Hortaliza">Verdura / Hortaliza</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold uppercase text-slate-600 mb-1">Unidad</label>
+            <select id="inv-unidad" class="w-full p-2.5 text-sm border border-slate-300 rounded-lg">
+              <option value="kg">Kilogramos (kg)</option>
+              <option value="litros">Litros (l)</option>
+              <option value="unidades">Unidades</option>
+              <option value="sacos">Sacos</option>
+            </select>
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold uppercase text-slate-600 mb-1">Cantidad Stock</label>
+          <input type="number" step="0.1" id="inv-cantidad" required
+            class="w-full p-2.5 text-sm border border-slate-300 rounded-lg">
+        </div>
+        <div class="flex justify-end gap-3 pt-4 border-t border-slate-100">
+          <button type="button" onclick="closeInventoryModal()"
+            class="px-4 py-2 text-xs font-semibold bg-slate-100 text-slate-600 rounded-lg hover:bg-slate-200">Cancelar</button>
+          <button type="submit"
+            class="px-4 py-2 text-xs font-semibold bg-brand-600 text-white rounded-lg hover:bg-brand-700">Guardar
+            Cambios</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- LÓGICA JAVASCRIPT -->
+  <script>
+    let isDemoMode = false;
+    let currentUser = null;
+    let db = null;
+    let firebaseConfig = null;
+
+    // Datos de cache en memoria
+    let currentStudents = [];
+    let currentKitchen = [];
+    let currentInventory = [];
+
+    // Datos demo por defecto
+    let demoData = {
+      students: [
+        { id: '1', name: 'Carlos Mendoza', cedula: 'V-28102938', edad: 17, peso: 62.5, talla: 1.72 },
+        { id: '2', name: 'Mariana Silva', cedula: 'V-28492019', edad: 16, peso: 51.0, talla: 1.60 },
+        { id: '3', name: 'José Gregorio Pérez', cedula: 'V-27938491', edad: 17, peso: 74.0, talla: 1.75 },
+        { id: '4', name: 'Ana Sofía Rivas', cedula: 'V-28594021', edad: 16, peso: 48.5, talla: 1.58 },
+        { id: '5', name: 'Luis Alejandro Gómez', cedula: 'V-28111222', edad: 18, peso: 82.0, talla: 1.80 }
+      ],
+      kitchen: [
+        { id: '1', name: 'Carmen Rosa Torres', cedula: 'V-12493820', turno: 'Mañana', certificado: 'Vigente', asistencia: {} },
+        { id: '2', name: 'María Elena Suárez', cedula: 'V-14920394', turno: 'Tarde', certificado: 'Vigente', asistencia: {} },
+        { id: '3', name: 'Pedro Antonio Rojas', cedula: 'V-10928394', turno: 'Completo', certificado: 'Vencido', asistencia: {} }
+      ],
+      inventory: [
+        { id: '1', nombre: 'Arroz Blanco', categoria: 'Rubros Secos', cantidad: 120, unidad: 'kg' },
+        { id: '2', nombre: 'Carne de Res', categoria: 'Proteína', cantidad: 45, unidad: 'kg' },
+        { id: '3', nombre: 'Papa', categoria: 'Verdura / Hortaliza', cantidad: 60, unidad: 'kg' },
+        { id: '4', nombre: 'Pasta Larga', categoria: 'Rubros Secos', cantidad: 90, unidad: 'kg' },
+        { id: '5', nombre: 'Pollo Entero', categoria: 'Proteína', cantidad: 55, unidad: 'kg' }
+      ]
+    };
+
+    window.onload = function () {
+      // Asignar fecha actual por defecto en la asistencia
+      const today = new Date().toISOString().split('T')[0];
+      document.getElementById('attendance-date').value = today;
+
+      const savedCfg = localStorage.getItem('nutri_fb_cfg');
+      if (savedCfg) {
+        try {
+          firebaseConfig = JSON.parse(savedCfg);
+          document.getElementById('cfg-apikey').value = firebaseConfig.apiKey || '';
+          document.getElementById('cfg-projectid').value = firebaseConfig.projectId || '';
+          initFirebaseAuto();
+        } catch (e) { }
+      }
+    };
+
+    function saveFirebaseConfig() {
+      const apiKey = document.getElementById('cfg-apikey').value.trim();
+      const projectId = document.getElementById('cfg-projectid').value.trim();
+      if (!apiKey || !projectId) {
+        alert('Ingresa la API Key y Project ID.');
+        return;
+      }
+      firebaseConfig = { apiKey, authDomain: `${projectId}.firebaseapp.com`, projectId, storageBucket: `${projectId}.appspot.com`, messagingSenderId: "0000000000", appId: "1:000:web:000" };
+      localStorage.setItem('nutri_fb_cfg', JSON.stringify(firebaseConfig));
+      initFirebaseAuto();
+      alert('¡Credenciales de Firebase vinculadas! Ya puedes Iniciar Sesión o Crear Cuenta.');
+    }
+
+    function initFirebaseAuto() {
+      try {
+        if (!firebase.apps.length) {
+          firebase.initializeApp(firebaseConfig);
+        }
+        db = firebase.firestore();
+        firebase.auth().onAuthStateChanged(user => {
+          if (user) {
+            currentUser = user;
+            isDemoMode = false;
+            enterApp(user.email);
+          }
+        });
+      } catch (e) { console.error("Error Firebase:", e); }
+    }
+
+    function enableDemoMode() {
+      isDemoMode = true;
+      currentUser = { email: 'demo@nutriescolar.local', uid: 'demo_user' };
+      enterApp('Modo Demo Local');
+    }
+
+    function enterApp(email) {
+      const authScreen = document.getElementById('auth-screen');
+      const appScreen = document.getElementById('app-screen');
+      if (authScreen) authScreen.style.display = 'none';
+      if (appScreen) appScreen.classList.remove('hidden');
+      document.getElementById('user-display-email').innerText = email;
+      loadAllData();
+    }
+
+    function logout() {
+      if (!isDemoMode && firebase.auth().currentUser) {
+        firebase.auth().signOut().then(() => { location.reload(); });
+      } else { location.reload(); }
+    }
+
+    function switchAuthTab(tab) {
+      if (tab === 'login') {
+        document.getElementById('tab-login').className = "flex-1 pb-3 text-sm font-semibold text-brand-600 border-b-2 border-brand-600";
+        document.getElementById('tab-register').className = "flex-1 pb-3 text-sm font-medium text-slate-400";
+        document.getElementById('form-login').classList.remove('hidden');
+        document.getElementById('form-register').classList.add('hidden');
+      } else {
+        document.getElementById('tab-register').className = "flex-1 pb-3 text-sm font-semibold text-brand-600 border-b-2 border-brand-600";
+        document.getElementById('tab-login').className = "flex-1 pb-3 text-sm font-medium text-slate-400";
+        document.getElementById('form-register').classList.remove('hidden');
+        document.getElementById('form-login').classList.add('hidden');
+      }
+    }
+
+    function handleLogin(e) {
+      e.preventDefault();
+      if (!db) { alert('Haz clic en "Guardar Credenciales" o entra con "Modo Demo Local".'); return; }
+      const email = document.getElementById('login-email').value;
+      const pass = document.getElementById('login-password').value;
+      firebase.auth().signInWithEmailAndPassword(email, pass).catch(err => alert(err.message));
+    }
+
+    function handleRegister(e) {
+      e.preventDefault();
+      if (!db) { alert('Haz clic en "Guardar Credenciales" o entra con "Modo Demo Local".'); return; }
+      const email = document.getElementById('reg-email').value;
+      const pass = document.getElementById('reg-password').value;
+      firebase.auth().createUserWithEmailAndPassword(email, pass).catch(err => alert(err.message));
+    }
+
+    function switchTab(tabName) {
+      ['dashboard', 'estudiantes', 'cocina', 'inventario'].forEach(t => {
+        document.getElementById(`tab-content-${t}`).classList.add('hidden');
+        document.getElementById(`nav-${t}`).className = "py-4 text-sm font-medium text-slate-500 hover:text-slate-800 flex items-center gap-2";
+      });
+      document.getElementById(`tab-content-${tabName}`).classList.remove('hidden');
+      document.getElementById(`nav-${tabName}`).className = "py-4 text-sm font-semibold text-brand-600 border-b-2 border-brand-600 flex items-center gap-2";
+      loadAllData();
+    }
+
+    async function loadAllData() {
+      if (isDemoMode) {
+        currentStudents = demoData.students;
+        currentKitchen = demoData.kitchen;
+        currentInventory = demoData.inventory;
+      } else if (db && currentUser) {
+        try {
+          const sSnap = await db.collection('users').doc(currentUser.uid).collection('students').get();
+          currentStudents = sSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+          const kSnap = await db.collection('users').doc(currentUser.uid).collection('kitchen').get();
+          currentKitchen = kSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+          const iSnap = await db.collection('users').doc(currentUser.uid).collection('inventory').get();
+          currentInventory = iSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        } catch (e) { console.error(e); }
+      }
+
+      renderStudents(currentStudents);
+      renderKitchen(currentKitchen);
+      renderInventory(currentInventory);
+      updateDashboardStatsDynamic(currentStudents, currentKitchen, currentInventory);
+    }
+
+    function calculateIMC(peso, talla) {
+      if (!talla || talla <= 0) return { imc: '0.0', label: 'N/D', color: 'bg-slate-100 text-slate-700' };
+      const imc = peso / (talla * talla);
+      let label = 'Normal', color = 'bg-emerald-100 text-emerald-800';
+      if (imc < 18.5) { label = 'Bajo Peso'; color = 'bg-blue-100 text-blue-800'; }
+      else if (imc >= 25 && imc < 30) { label = 'Sobrepeso'; color = 'bg-amber-100 text-amber-800'; }
+      else if (imc >= 30) { label = 'Obesidad'; color = 'bg-rose-100 text-rose-800'; }
+      return { imc: imc.toFixed(1), label, color };
+    }
+
+    // RENDERIZADO Y EDICIÓN - ESTUDIANTES
+    function renderStudents(list) {
+      const tbody = document.getElementById('students-table-body');
+      tbody.innerHTML = '';
+      if (list.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-slate-400">No hay estudiantes registrados.</td></tr>`;
+        return;
+      }
+      list.forEach(s => {
+        const res = calculateIMC(s.peso, s.talla);
+        tbody.innerHTML += `
+                    <tr class="hover:bg-slate-50 transition">
+                        <td class="p-4 font-medium text-slate-800">${s.name}<br><span class="text-xs text-slate-400 font-normal">${s.cedula}</span></td>
+                        <td class="p-4">${s.edad} años</td>
+                        <td class="p-4">${s.peso} kg</td>
+                        <td class="p-4">${s.talla} m</td>
+                        <td class="p-4 font-bold text-slate-900">${res.imc}</td>
+                        <td class="p-4"><span class="px-2.5 py-1 rounded-full text-xs font-semibold ${res.color}">${res.label}</span></td>
+                        <td class="p-4 text-right space-x-3 actions-column">
+                            <button type="button" onclick="editStudent('${s.id}')" title="Editar" class="text-slate-500 hover:text-brand-600 font-medium text-xs"><i class="fa-solid fa-pen-to-square"></i> Editar</button>
+                            <button type="button" onclick="deleteStudent('${s.id}')" title="Eliminar" class="text-slate-400 hover:text-rose-600"><i class="fa-solid fa-trash"></i></button>
+                        </td>
+                    </tr>`;
+      });
+    }
+
+    function openStudentModal(editObj = null) {
+      document.getElementById('student-modal-title').innerText = editObj ? 'Editar Estudiante' : 'Registrar Estudiante (5to Año)';
+      document.getElementById('student-id').value = editObj ? editObj.id : '';
+      document.getElementById('student-name').value = editObj ? editObj.name : '';
+      document.getElementById('student-cedula').value = editObj ? editObj.cedula : '';
+      document.getElementById('student-edad').value = editObj ? editObj.edad : '';
+      document.getElementById('student-peso').value = editObj ? editObj.peso : '';
+      document.getElementById('student-talla').value = editObj ? editObj.talla : '';
+      document.getElementById('modal-student').classList.remove('hidden');
+      document.getElementById('modal-student').classList.add('flex');
+    }
+    function closeStudentModal() { document.getElementById('modal-student').classList.add('hidden'); document.getElementById('modal-student').classList.remove('flex'); }
+
+    function editStudent(id) {
+      const st = currentStudents.find(x => x.id === id);
+      if (st) openStudentModal(st);
+    }
+
+    async function saveStudent(e) {
+      e.preventDefault();
+      const id = document.getElementById('student-id').value;
+      const data = {
+        name: document.getElementById('student-name').value,
+        cedula: document.getElementById('student-cedula').value,
+        edad: Number(document.getElementById('student-edad').value),
+        peso: Number(document.getElementById('student-peso').value),
+        talla: Number(document.getElementById('student-talla').value)
+      };
+
+      if (isDemoMode) {
+        if (id) {
+          const idx = demoData.students.findIndex(s => s.id === id);
+          if (idx !== -1) demoData.students[idx] = { id, ...data };
+        } else {
+          demoData.students.push({ id: Date.now().toString(), ...data });
+        }
+        closeStudentModal();
+        loadAllData();
+      } else if (db && currentUser) {
+        const col = db.collection('users').doc(currentUser.uid).collection('students');
+        if (id) { await col.doc(id).update(data); }
+        else { await col.add(data); }
+        closeStudentModal();
+        loadAllData();
+      }
+    }
+
+    async function deleteStudent(id) {
+      if (confirm('¿Eliminar estudiante de forma definitiva?')) {
+        if (isDemoMode) {
+          demoData.students = demoData.students.filter(s => s.id !== id);
+          loadAllData();
+        } else if (db && currentUser) {
+          await db.collection('users').doc(currentUser.uid).collection('students').doc(id).delete();
+          loadAllData();
+        }
+      }
+    }
+
+    // RENDERIZADO Y EDICIÓN - PERSONAL DE COCINA
+    function renderKitchen(list) {
+      const tbody = document.getElementById('kitchen-table-body');
+      tbody.innerHTML = '';
+      if (list.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-slate-400">No hay personal registrado.</td></tr>`;
+        return;
+      }
+
+      const selectedDate = document.getElementById('attendance-date').value || new Date().toISOString().split('T')[0];
+
+      list.forEach(k => {
+        const certColor = k.certificado === 'Vigente' ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800';
+        const isAttending = k.asistencia && k.asistencia[selectedDate] === true;
+
+        tbody.innerHTML += `
+                    <tr class="hover:bg-slate-50 transition">
+                        <td class="p-4 font-medium text-slate-800">${k.name}<br><span class="text-xs text-slate-400 font-normal">${k.cedula}</span></td>
+                        <td class="p-4"><span class="bg-slate-100 text-slate-700 px-2 py-1 rounded text-xs font-medium">${k.turno}</span></td>
+                        <td class="p-4"><span class="px-2.5 py-1 rounded-full text-xs font-semibold ${certColor}">${k.certificado}</span></td>
+                        <td class="p-4">
+                            <label class="inline-flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" ${isAttending ? 'checked' : ''} onchange="toggleKitchenAttendance('${k.id}', this.checked)" class="w-4 h-4 text-brand-600 rounded accent-brand-600">
+                                <span class="text-xs ${isAttending ? 'text-emerald-700 font-bold' : 'text-slate-400'}">${isAttending ? 'PRESENTE' : 'Ausente'}</span>
+                            </label>
+                        </td>
+                        <td class="p-4 text-right space-x-3 actions-column">
+                            <button type="button" onclick="editKitchen('${k.id}')" title="Editar" class="text-slate-500 hover:text-brand-600 font-medium text-xs"><i class="fa-solid fa-pen-to-square"></i> Editar</button>
+                            <button type="button" onclick="deleteKitchen('${k.id}')" title="Eliminar" class="text-slate-400 hover:text-rose-600"><i class="fa-solid fa-trash"></i></button>
+                        </td>
+                    </tr>`;
+      });
+    }
+
+    function openKitchenModal(editObj = null) {
+      document.getElementById('kitchen-modal-title').innerText = editObj ? 'Editar Personal' : 'Registrar Personal de Cocina';
+      document.getElementById('kitchen-id').value = editObj ? editObj.id : '';
+      document.getElementById('kitchen-name').value = editObj ? editObj.name : '';
+      document.getElementById('kitchen-cedula').value = editObj ? editObj.cedula : '';
+      document.getElementById('kitchen-turno').value = editObj ? editObj.turno : 'Mañana';
+      document.getElementById('kitchen-certificado').value = editObj ? editObj.certificado : 'Vigente';
+      document.getElementById('modal-kitchen').classList.remove('hidden');
+      document.getElementById('modal-kitchen').classList.add('flex');
+    }
+    function closeKitchenModal() { document.getElementById('modal-kitchen').classList.add('hidden'); document.getElementById('modal-kitchen').classList.remove('flex'); }
+
+    function editKitchen(id) {
+      const k = currentKitchen.find(x => x.id === id);
+      if (k) openKitchenModal(k);
+    }
+
+    async function saveKitchen(e) {
+      e.preventDefault();
+      const id = document.getElementById('kitchen-id').value;
+      const data = {
+        name: document.getElementById('kitchen-name').value,
+        cedula: document.getElementById('kitchen-cedula').value,
+        turno: document.getElementById('kitchen-turno').value,
+        certificado: document.getElementById('kitchen-certificado').value
+      };
+
+      if (isDemoMode) {
+        if (id) {
+          const idx = demoData.kitchen.findIndex(k => k.id === id);
+          if (idx !== -1) demoData.kitchen[idx] = { ...demoData.kitchen[idx], ...data };
+        } else {
+          demoData.kitchen.push({ id: Date.now().toString(), ...data, asistencia: {} });
+        }
+        closeKitchenModal();
+        loadAllData();
+      } else if (db && currentUser) {
+        const col = db.collection('users').doc(currentUser.uid).collection('kitchen');
+        if (id) { await col.doc(id).update(data); }
+        else { await col.add({ ...data, asistencia: {} }); }
+        closeKitchenModal();
+        loadAllData();
+      }
+    }
+
+    async function toggleKitchenAttendance(id, isPresent) {
+      const selectedDate = document.getElementById('attendance-date').value || new Date().toISOString().split('T')[0];
+
+      if (isDemoMode) {
+        const k = demoData.kitchen.find(x => x.id === id);
+        if (k) {
+          if (!k.asistencia) k.asistencia = {};
+          k.asistencia[selectedDate] = isPresent;
+          renderKitchen(demoData.kitchen);
+        }
+      } else if (db && currentUser) {
+        const ref = db.collection('users').doc(currentUser.uid).collection('kitchen').doc(id);
+        const doc = await ref.get();
+        if (doc.exists) {
+          let ast = doc.data().asistencia || {};
+          ast[selectedDate] = isPresent;
+          await ref.update({ asistencia: ast });
+          loadAllData();
+        }
+      }
+    }
+
+    async function deleteKitchen(id) {
+      if (confirm('¿Eliminar registro de personal?')) {
+        if (isDemoMode) {
+          demoData.kitchen = demoData.kitchen.filter(k => k.id !== id);
+          loadAllData();
+        } else if (db && currentUser) {
+          await db.collection('users').doc(currentUser.uid).collection('kitchen').doc(id).delete();
+          loadAllData();
+        }
+      }
+    }
+
+    // RENDERIZADO Y EDICIÓN - INVENTARIO
+    function renderInventory(list) {
+      const tbody = document.getElementById('inventory-table-body');
+      tbody.innerHTML = '';
+      if (list.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-slate-400">Inventario vacío.</td></tr>`;
+        return;
+      }
+      list.forEach(i => {
+        tbody.innerHTML += `
+                    <tr class="hover:bg-slate-50 transition">
+                        <td class="p-4 font-medium text-slate-800">${i.nombre}</td>
+                        <td class="p-4"><span class="bg-indigo-50 text-indigo-700 px-2.5 py-1 rounded-full text-xs font-semibold">${i.categoria}</span></td>
+                        <td class="p-4 font-bold text-slate-900">${i.cantidad}</td>
+                        <td class="p-4 text-xs text-slate-500">${i.unidad}</td>
+                        <td class="p-4 text-right space-x-2 actions-column">
+                            <button type="button" onclick="adjustInventory('${i.id}', 5)" title="Sumar +5" class="text-emerald-600 hover:bg-emerald-50 p-1.5 rounded"><i class="fa-solid fa-plus"></i></button>
+                            <button type="button" onclick="adjustInventory('${i.id}', -5)" title="Restar -5" class="text-amber-600 hover:bg-amber-50 p-1.5 rounded"><i class="fa-solid fa-minus"></i></button>
+                            <button type="button" onclick="editInventory('${i.id}')" title="Editar" class="text-slate-500 hover:text-brand-600 p-1.5 rounded"><i class="fa-solid fa-pen-to-square"></i></button>
+                            <button type="button" onclick="deleteInventory('${i.id}')" title="Eliminar" class="text-slate-400 hover:text-rose-600 p-1.5 rounded"><i class="fa-solid fa-trash"></i></button>
+                        </td>
+                    </tr>`;
+      });
+    }
+
+    function openInventoryModal(editObj = null) {
+      document.getElementById('inventory-modal-title').innerText = editObj ? 'Editar Insumo' : 'Registrar Insumo de Alimentos';
+      document.getElementById('inventory-id').value = editObj ? editObj.id : '';
+      document.getElementById('inv-nombre').value = editObj ? editObj.nombre : '';
+      document.getElementById('inv-categoria').value = editObj ? editObj.categoria : 'Rubros Secos';
+      document.getElementById('inv-unidad').value = editObj ? editObj.unidad : 'kg';
+      document.getElementById('inv-cantidad').value = editObj ? editObj.cantidad : '';
+      document.getElementById('modal-inventory').classList.remove('hidden');
+      document.getElementById('modal-inventory').classList.add('flex');
+    }
+    function closeInventoryModal() { document.getElementById('modal-inventory').classList.add('hidden'); document.getElementById('modal-inventory').classList.remove('flex'); }
+
+    function editInventory(id) {
+      const item = currentInventory.find(x => x.id === id);
+      if (item) openInventoryModal(item);
+    }
+
+    async function saveInventory(e) {
+      e.preventDefault();
+      const id = document.getElementById('inventory-id').value;
+      const data = {
+        nombre: document.getElementById('inv-nombre').value,
+        categoria: document.getElementById('inv-categoria').value,
+        cantidad: Number(document.getElementById('inv-cantidad').value),
+        unidad: document.getElementById('inv-unidad').value
+      };
+
+      if (isDemoMode) {
+        if (id) {
+          const idx = demoData.inventory.findIndex(i => i.id === id);
+          if (idx !== -1) demoData.inventory[idx] = { id, ...data };
+        } else {
+          demoData.inventory.push({ id: Date.now().toString(), ...data });
+        }
+        closeInventoryModal();
+        loadAllData();
+      } else if (db && currentUser) {
+        const col = db.collection('users').doc(currentUser.uid).collection('inventory');
+        if (id) { await col.doc(id).update(data); }
+        else { await col.add(data); }
+        closeInventoryModal();
+        loadAllData();
+      }
+    }
+
+    async function adjustInventory(id, delta) {
+      if (isDemoMode) {
+        const item = demoData.inventory.find(i => i.id === id);
+        if (item) {
+          item.cantidad = Math.max(0, item.cantidad + delta);
+          loadAllData();
+        }
+      } else if (db && currentUser) {
+        const ref = db.collection('users').doc(currentUser.uid).collection('inventory').doc(id);
+        const doc = await ref.get();
+        if (doc.exists) {
+          const nuevaCant = Math.max(0, (doc.data().cantidad || 0) + delta);
+          await ref.update({ cantidad: nuevaCant });
+          loadAllData();
+        }
+      }
+    }
+
+    async function deleteInventory(id) {
+      if (confirm('¿Eliminar insumo del inventario?')) {
+        if (isDemoMode) {
+          demoData.inventory = demoData.inventory.filter(i => i.id !== id);
+          loadAllData();
+        } else if (db && currentUser) {
+          await db.collection('users').doc(currentUser.uid).collection('inventory').doc(id).delete();
+          loadAllData();
+        }
+      }
+    }
+
+    function updateDashboardStatsDynamic(students, kitchen, inventory) {
+      document.getElementById('stat-estudiantes').innerText = students.length;
+      document.getElementById('stat-cocina').innerText = kitchen.length;
+      document.getElementById('stat-inventario').innerText = inventory.length;
+      if (students.length > 0) {
+        let sum = students.reduce((acc, s) => acc + (s.peso / (s.talla * s.talla)), 0);
+        document.getElementById('stat-imc').innerText = (sum / students.length).toFixed(1);
+      }
+    }
+
+    // FUNCIONALIDAD DE IMPRESIÓN OFICIAL
+    function printReport(moduleName) {
+      const printTitle = document.getElementById('print-title');
+      const printDate = document.getElementById('print-date');
+      const printUser = document.getElementById('print-user');
+
+      const now = new Date();
+      printDate.innerText = now.toLocaleDateString('es-ES') + ' ' + now.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+      printUser.innerText = currentUser ? currentUser.email : 'Usuario Autorizado';
+
+      if (moduleName === 'Estudiantes') {
+        printTitle.innerText = "EXPEDIENTE Y DIAGNÓSTICO NUTRICIONAL DE ESTUDIANTES (5TO AÑO)";
+      } else if (moduleName === 'Cocina') {
+        const fecha = document.getElementById('attendance-date').value;
+        printTitle.innerText = `CONTROL Y PLANILLA DE ASISTENCIA - PERSONAL DE COCINA (${fecha})`;
+      } else if (moduleName === 'Inventario') {
+        printTitle.innerText = "INVENTARIO Y AUDITORÍA DIARIA DE ALIMENTOS";
+      }
+
+      window.print();
+    }
+  </script>
+</body>
+
+</html>

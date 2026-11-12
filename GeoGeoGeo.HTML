@@ -20,7 +20,8 @@
       theme: {
         extend: {
           colors: {
-            brand: { 50: '#f0fdf4', 100: '#dcfce7', 500: '#22c55e', 600: '#16a34a', 700: '#15803d' }
+            brand: { 50: '#f0fdf4', 100: '#dcfce7', 500: '#22c55e', 600: '#16a34a', 700: '#15803d' },
+            primary: { 50: '#eef2ff', 100: '#e0e7ff', 500: '#6366f1', 600: '#4f46e5', 700: '#4338ca' }
           }
         }
       }
@@ -31,7 +32,6 @@
   <style>
     @media print {
 
-      /* Ocultar elementos de navegación y UI no imprimibles */
       #auth-screen,
       header,
       nav,
@@ -44,7 +44,7 @@
       body {
         background: white !important;
         color: black !important;
-        font-size: 12pt;
+        font-size: 10pt;
       }
 
       #app-screen {
@@ -56,7 +56,10 @@
         max-width: 100% !important;
       }
 
-      /* Mostrar encabezado de reporte oficial al imprimir */
+      #tab-content-menu .grid {
+        display: block !important;
+      }
+
       .print-header {
         display: block !important;
         text-align: center;
@@ -74,9 +77,14 @@
       th,
       td {
         border: 1px solid #000 !important;
-        padding: 8px !important;
+        padding: 5px !important;
+        text-align: center !important;
+        font-size: 8.5pt !important;
+      }
+
+      th:first-child,
+      td:first-child {
         text-align: left !important;
-        font-size: 10pt !important;
       }
 
       th {
@@ -107,94 +115,97 @@
   </style>
 </head>
 
-<body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex flex-col">
+<body
+  class="bg-gradient-to-br from-slate-50 via-emerald-50/20 to-indigo-50/30 text-slate-800 font-sans min-h-screen flex flex-col">
 
   <!-- PANTALLA DE AUTENTICACIÓN / CONFIGURACIÓN FIREBASE -->
   <div id="auth-screen"
-    class="fixed inset-0 z-50 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 overflow-y-auto max-h-[90vh]">
+    class="fixed inset-0 z-50 bg-slate-900/80 backdrop-blur-md flex items-center justify-center p-4">
+    <div
+      class="bg-white rounded-3xl shadow-2xl border border-slate-100 max-w-md w-full p-8 overflow-y-auto max-h-[90vh]">
       <div class="text-center mb-6">
         <div
-          class="inline-flex items-center justify-center w-16 h-16 bg-brand-100 text-brand-600 rounded-full text-2xl mb-3 shadow-inner">
-          <i class="fa-solid fa-utensils"></i>
+          class="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-tr from-emerald-500 to-teal-400 text-white rounded-2xl text-3xl mb-4 shadow-lg shadow-emerald-500/30">
+          <i class="fa-solid fa-wheat-awn"></i>
         </div>
-        <h1 class="text-2xl font-bold text-slate-900">NutriEscolar</h1>
-        <p class="text-sm text-slate-500 mt-1">Control Nutricional y Comedor Escolar (CNAE)</p>
+        <h1 class="text-3xl font-black bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
+          NutriEscolar</h1>
+        <p class="text-xs font-medium text-slate-500 mt-1 uppercase tracking-wider">Control Nutricional y Comedor
+          Escolar (CNAE)</p>
       </div>
 
       <!-- Panel de Configuración de Credenciales Firebase -->
-      <div id="firebase-config-box" class="mb-6 p-4 bg-slate-50 border border-slate-200 rounded-xl">
-        <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2 flex items-center gap-1">
-          <i class="fa-solid fa-gear"></i> Configuración de Firebase
+      <div id="firebase-config-box" class="mb-6 p-4 bg-slate-50/80 border border-slate-200 rounded-2xl">
+        <h3 class="text-xs font-bold uppercase tracking-wider text-slate-600 mb-2 flex items-center gap-1.5">
+          <i class="fa-solid fa-gear text-indigo-500"></i> Configuración de Firebase
         </h3>
-        <p class="text-xs text-slate-600 mb-3">Ingresa tus credenciales de Firebase para sincronizar en la nube, o pulsa
-          <strong>Modo Demo Local</strong> para probar el sistema sin instalar nada.
-        </p>
+        <p class="text-xs text-slate-500 mb-3">Ingresa tus credenciales o pulsa <strong>Modo Demo Local</strong> para
+          explorar la app colorida al instante.</p>
         <div class="space-y-2">
           <input type="text" id="cfg-apikey" placeholder="API Key (Ej: AIzaSy...)"
-            class="w-full text-xs p-2.5 border rounded border-slate-300">
+            class="w-full text-xs p-3 border rounded-xl border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:outline-none">
           <input type="text" id="cfg-projectid" placeholder="Project ID (Ej: nutriescolar-app)"
-            class="w-full text-xs p-2.5 border rounded border-slate-300">
+            class="w-full text-xs p-3 border rounded-xl border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:outline-none">
           <div class="flex gap-2 pt-1">
             <button type="button" onclick="saveFirebaseConfig()"
-              class="flex-1 bg-slate-800 text-white text-xs py-2.5 rounded-lg font-medium hover:bg-slate-900 transition">Guardar
-              Credenciales</button>
+              class="flex-1 bg-slate-800 text-white text-xs py-3 rounded-xl font-semibold hover:bg-slate-900 transition shadow-sm">Guardar</button>
             <button type="button" onclick="enableDemoMode()"
-              class="flex-1 bg-brand-600 text-white text-xs py-2.5 rounded-lg font-medium hover:bg-brand-700 transition">Modo
-              Demo Local</button>
+              class="flex-1 bg-gradient-to-r from-emerald-500 to-teal-600 text-white text-xs py-3 rounded-xl font-semibold hover:opacity-95 transition shadow-md shadow-emerald-500/20">Modo
+              Demo</button>
           </div>
         </div>
       </div>
 
       <!-- Formulario Login / Registro -->
       <div id="auth-forms-container">
-        <div class="flex border-b border-slate-200 mb-6">
+        <div class="flex bg-slate-100 p-1 rounded-xl mb-6">
           <button type="button" id="tab-login" onclick="switchAuthTab('login')"
-            class="flex-1 pb-3 text-sm font-semibold text-brand-600 border-b-2 border-brand-600">Iniciar Sesión</button>
+            class="flex-1 py-2.5 text-xs font-bold rounded-lg bg-white text-emerald-600 shadow-sm transition">Iniciar
+            Sesión</button>
           <button type="button" id="tab-register" onclick="switchAuthTab('register')"
-            class="flex-1 pb-3 text-sm font-medium text-slate-400">Crear Cuenta</button>
+            class="flex-1 py-2.5 text-xs font-bold rounded-lg text-slate-500 transition">Crear Cuenta</button>
         </div>
 
         <!-- Form Login -->
         <form id="form-login" onsubmit="handleLogin(event)" class="space-y-4">
           <div>
-            <label class="block text-xs font-semibold uppercase text-slate-600 mb-1">Correo Electrónico</label>
+            <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Correo Electrónico</label>
             <input type="email" id="login-email" required
-              class="w-full p-3 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:outline-none">
+              class="w-full p-3.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:bg-white focus:outline-none transition">
           </div>
           <div>
-            <label class="block text-xs font-semibold uppercase text-slate-600 mb-1">Contraseña</label>
+            <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Contraseña</label>
             <input type="password" id="login-password" required
-              class="w-full p-3 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:outline-none">
+              class="w-full p-3.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:bg-white focus:outline-none transition">
           </div>
           <button type="submit"
-            class="w-full bg-brand-600 text-white py-3 rounded-lg font-semibold hover:bg-brand-700 transition shadow-lg shadow-brand-500/20">Entrar
+            class="w-full bg-gradient-to-r from-emerald-600 to-teal-600 text-white py-3.5 rounded-xl font-bold hover:opacity-95 transition shadow-lg shadow-emerald-600/30">Entrar
             al Sistema</button>
         </form>
 
         <!-- Form Register -->
         <form id="form-register" onsubmit="handleRegister(event)" class="space-y-4 hidden">
           <div>
-            <label class="block text-xs font-semibold uppercase text-slate-600 mb-1">Correo Electrónico</label>
+            <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Correo Electrónico</label>
             <input type="email" id="reg-email" required
-              class="w-full p-3 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:outline-none">
+              class="w-full p-3.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:bg-white focus:outline-none transition">
           </div>
           <div>
-            <label class="block text-xs font-semibold uppercase text-slate-600 mb-1">Contraseña (Mín. 6
-              caracteres)</label>
+            <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Contraseña (Mín. 6 caracteres)</label>
             <input type="password" id="reg-password" required
-              class="w-full p-3 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:outline-none">
+              class="w-full p-3.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:bg-white focus:outline-none transition">
           </div>
           <button type="submit"
-            class="w-full bg-slate-900 text-white py-3 rounded-lg font-semibold hover:bg-slate-800 transition">Registrarse</button>
+            class="w-full bg-gradient-to-r from-indigo-600 to-violet-600 text-white py-3.5 rounded-xl font-bold hover:opacity-95 transition shadow-lg shadow-indigo-600/30">Registrarse</button>
         </form>
       </div>
     </div>
   </div>
 
-  <!-- ENCABEZADO DE IMPRESIÓN OFICIAL (Visibilidad exclusiva @media print) -->
+  <!-- ENCABEZADO DE IMPRESIÓN OFICIAL -->
   <div class="print-header">
-    <h1 style="font-size: 16pt; font-weight: bold; text-transform: uppercase;">Programa de Alimentación Escolar (CNAE)
+    <h1 style="font-size: 16pt; font-weight: bold; text-transform: uppercase;">Corporación Nacional de Alimentación
+      Escolar (CNAE)
     </h1>
     <h2 id="print-title" style="font-size: 13pt; font-weight: bold; margin-top: 4px;">Reporte Institucional</h2>
     <p style="font-size: 9pt; margin-top: 2px;">Fecha de emisión: <span id="print-date"></span> | Usuario: <span
@@ -205,42 +216,49 @@
   <div id="app-screen" class="hidden flex-1 flex flex-col">
     <!-- Barra Superior -->
     <header
-      class="bg-white border-b border-slate-200 sticky top-0 z-40 px-6 py-4 flex items-center justify-between shadow-sm">
+      class="bg-white/80 backdrop-blur-md border-b border-slate-200/80 sticky top-0 z-40 px-6 py-3.5 flex items-center justify-between shadow-sm">
       <div class="flex items-center gap-3">
         <div
-          class="w-10 h-10 bg-brand-600 text-white rounded-xl flex items-center justify-center font-bold text-lg shadow-md">
+          class="w-11 h-11 bg-gradient-to-tr from-emerald-500 to-teal-500 text-white rounded-2xl flex items-center justify-center font-bold text-lg shadow-md shadow-emerald-500/20">
           <i class="fa-solid fa-wheat-awn"></i>
         </div>
         <div>
-          <h2 class="font-bold text-slate-900 leading-tight">NutriEscolar Pro</h2>
-          <p class="text-xs text-slate-500" id="user-display-email">Sesión activa</p>
+          <h2 class="font-black text-slate-900 tracking-tight leading-tight">NutriEscolar <span
+              class="text-emerald-600 text-xs px-2 py-0.5 bg-emerald-50 rounded-full border border-emerald-200 font-bold">Geo</span>
+          </h2>
+          <p class="text-xs font-medium text-slate-400" id="user-display-email">Sesión activa</p>
         </div>
       </div>
       <div class="flex items-center gap-3">
         <button type="button" onclick="logout()"
-          class="text-xs bg-rose-50 text-rose-600 font-semibold px-3 py-2 rounded-lg hover:bg-rose-100 transition flex items-center gap-1.5">
+          class="text-xs bg-rose-50 text-rose-600 font-bold px-3.5 py-2 rounded-xl hover:bg-rose-100 transition flex items-center gap-1.5 border border-rose-200/60 shadow-sm">
           <i class="fa-solid fa-right-from-bracket"></i> Salir
         </button>
       </div>
     </header>
 
-    <!-- Navegación por pestañas -->
-    <nav class="bg-white border-b border-slate-200 px-6 flex gap-8 overflow-x-auto">
+    <!-- Navegación por pestañas con estilo de pastillas coloridas -->
+    <nav
+      class="bg-white/60 backdrop-blur-sm border-b border-slate-200/80 px-6 py-2 flex gap-3 overflow-x-auto shadow-sm">
       <button type="button" onclick="switchTab('dashboard')" id="nav-dashboard"
-        class="py-4 text-sm font-semibold text-brand-600 border-b-2 border-brand-600 flex items-center gap-2">
-        <i class="fa-solid fa-chart-pie"></i> Dashboard
+        class="py-2.5 px-4 rounded-xl text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 flex items-center gap-2 transition shadow-sm">
+        <i class="fa-solid fa-chart-pie text-emerald-600"></i> Dashboard
       </button>
       <button type="button" onclick="switchTab('estudiantes')" id="nav-estudiantes"
-        class="py-4 text-sm font-medium text-slate-500 hover:text-slate-800 flex items-center gap-2">
-        <i class="fa-solid fa-graduation-cap"></i> Estudiantes (5to Año)
+        class="py-2.5 px-4 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-100 flex items-center gap-2 transition">
+        <i class="fa-solid fa-graduation-cap text-blue-500"></i> Estudiantes
       </button>
       <button type="button" onclick="switchTab('cocina')" id="nav-cocina"
-        class="py-4 text-sm font-medium text-slate-500 hover:text-slate-800 flex items-center gap-2">
-        <i class="fa-solid fa-kitchen-set"></i> Asistencia
+        class="py-2.5 px-4 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-100 flex items-center gap-2 transition">
+        <i class="fa-solid fa-kitchen-set text-amber-500"></i> Personal / Cocina
       </button>
       <button type="button" onclick="switchTab('inventario')" id="nav-inventario"
-        class="py-4 text-sm font-medium text-slate-500 hover:text-slate-800 flex items-center gap-2">
-        <i class="fa-solid fa-boxes-stacked"></i> Inventario Diarios
+        class="py-2.5 px-4 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-100 flex items-center gap-2 transition">
+        <i class="fa-solid fa-boxes-stacked text-teal-500"></i> Inventario
+      </button>
+      <button type="button" onclick="switchTab('menu')" id="nav-menu"
+        class="py-2.5 px-4 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-100 flex items-center gap-2 transition">
+        <i class="fa-solid fa-utensils text-purple-500"></i> Menú y Despacho
       </button>
     </nav>
 
@@ -249,104 +267,144 @@
 
       <!-- TAB: DASHBOARD -->
       <section id="tab-content-dashboard" class="space-y-6">
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-4">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+          <!-- Tarjeta Estudiantes -->
+          <div
+            class="bg-gradient-to-br from-blue-500 to-indigo-600 text-white p-5 rounded-3xl shadow-xl shadow-blue-500/20 flex items-center gap-4 relative overflow-hidden">
+            <div class="absolute -right-4 -bottom-4 text-blue-400/20 text-7xl font-black pointer-events-none"><i
+                class="fa-solid fa-users"></i></div>
             <div
-              class="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-xl font-bold">
-              <i class="fa-solid fa-users"></i>
+              class="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-2xl font-bold">
+              <i class="fa-solid fa-users text-white"></i>
             </div>
             <div>
-              <p class="text-xs font-semibold text-slate-400 uppercase">Estudiantes 5to Año</p>
-              <h3 id="stat-estudiantes" class="text-2xl font-black text-slate-800">0</h3>
+              <p class="text-xs font-bold uppercase tracking-wider text-blue-100">Total Estudiantes</p>
+              <h3 id="stat-estudiantes" class="text-3xl font-black mt-0.5">0</h3>
             </div>
           </div>
-          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-4">
+          <!-- Tarjeta Cocina -->
+          <div
+            class="bg-gradient-to-br from-amber-500 to-orange-600 text-white p-5 rounded-3xl shadow-xl shadow-amber-500/20 flex items-center gap-4 relative overflow-hidden">
+            <div class="absolute -right-4 -bottom-4 text-amber-400/20 text-7xl font-black pointer-events-none"><i
+                class="fa-solid fa-utensils"></i></div>
             <div
-              class="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center text-xl font-bold">
-              <i class="fa-solid fa-utensils"></i>
+              class="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-2xl font-bold">
+              <i class="fa-solid fa-utensils text-white"></i>
             </div>
             <div>
-              <p class="text-xs font-semibold text-slate-400 uppercase">Personal de Cocina</p>
-              <h3 id="stat-cocina" class="text-2xl font-black text-slate-800">0</h3>
+              <p class="text-xs font-bold uppercase tracking-wider text-amber-100">Personal de Cocina</p>
+              <h3 id="stat-cocina" class="text-3xl font-black mt-0.5">0</h3>
             </div>
           </div>
-          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-4">
+          <!-- Tarjeta Inventario -->
+          <div
+            class="bg-gradient-to-br from-emerald-500 to-teal-600 text-white p-5 rounded-3xl shadow-xl shadow-emerald-500/20 flex items-center gap-4 relative overflow-hidden">
+            <div class="absolute -right-4 -bottom-4 text-emerald-400/20 text-7xl font-black pointer-events-none"><i
+                class="fa-solid fa-box"></i></div>
             <div
-              class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl font-bold">
-              <i class="fa-solid fa-box"></i>
+              class="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-2xl font-bold">
+              <i class="fa-solid fa-box text-white"></i>
             </div>
             <div>
-              <p class="text-xs font-semibold text-slate-400 uppercase">Insumos Registrados</p>
-              <h3 id="stat-inventario" class="text-2xl font-black text-slate-800">0</h3>
-            </div>
-          </div>
-          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-4">
-            <div
-              class="w-12 h-12 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center text-xl font-bold">
-              <i class="fa-solid fa-heart-pulse"></i>
-            </div>
-            <div>
-              <p class="text-xs font-semibold text-slate-400 uppercase">IMC Promedio</p>
-              <h3 id="stat-imc" class="text-2xl font-black text-slate-800">0.0</h3>
+              <p class="text-xs font-bold uppercase tracking-wider text-emerald-100">Insumos Registrados</p>
+              <h3 id="stat-inventario" class="text-3xl font-black mt-0.5">0</h3>
             </div>
           </div>
         </div>
 
-        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-          <h3 class="font-bold text-slate-800 mb-4 flex items-center gap-2"><i
-              class="fa-solid fa-circle-info text-brand-600"></i> Resumen de Operatividad</h3>
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm text-slate-600">
-            <div class="p-4 bg-brand-50 rounded-xl border border-brand-100">
-              <h4 class="font-bold text-brand-700 mb-1">Estatus Antropométrico</h4>
-              <p class="text-xs text-brand-900">Calculador automatizado de IMC con estándares OMS. Puedes editar los
-                datos en cualquier momento e imprimir las listas para los expedientes estudiantiles.</p>
+        <div class="bg-white p-8 rounded-3xl border border-slate-200/80 shadow-xl shadow-slate-100">
+          <h3 class="font-extrabold text-slate-800 text-lg mb-5 flex items-center gap-2.5">
+            <span class="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center text-sm"><i
+                class="fa-solid fa-circle-info"></i></span>
+            Resumen Operativo
+          </h3>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm">
+            <div
+              class="p-5 bg-gradient-to-br from-blue-50/60 to-indigo-50/60 rounded-2xl border border-blue-100/80 shadow-sm">
+              <h4 class="font-bold text-blue-700 mb-2 flex items-center gap-2"><i class="fa-solid fa-notes-medical"></i>
+                Estatus Antropométrico</h4>
+              <p class="text-xs text-slate-600 leading-relaxed">Manejo de peso, altura, IMC según la OMS y alertas
+                especiales de alergias o condiciones médicas en la alimentación de los estudiantes por año escolar.</p>
             </div>
-            <div class="p-4 bg-amber-50 rounded-xl border border-amber-100">
-              <h4 class="font-bold text-amber-700 mb-1">Asistencia de Procesadores</h4>
-              <p class="text-xs text-amber-900">Control de asistencia diaria del personal de cocina. Genera e imprime la
-                planilla de asistencia por fecha para respaldo institucional.</p>
+            <div
+              class="p-5 bg-gradient-to-br from-amber-50/60 to-orange-50/60 rounded-2xl border border-amber-100/80 shadow-sm">
+              <h4 class="font-bold text-amber-700 mb-2 flex items-center gap-2"><i class="fa-solid fa-id-card"></i>
+                Asistencia de Procesadores</h4>
+              <p class="text-xs text-slate-600 leading-relaxed">Control de asistencia semanal (Lunes a Viernes) del
+                personal de cocina.
+                Genera e imprime la planilla de asistencia para respaldo institucional.</p>
             </div>
-            <div class="p-4 bg-blue-50 rounded-xl border border-blue-100">
-              <h4 class="font-bold text-blue-700 mb-1">Auditoría de Inventario</h4>
-              <p class="text-xs text-blue-900">Ajusta o edita el stock de insumos secos, proteínas y vegetales e imprime
-                reportes diarios con firmas de validación.</p>
+            <div
+              class="p-5 bg-gradient-to-br from-rose-50/60 to-pink-50/60 rounded-2xl border border-rose-100/80 shadow-sm">
+              <h4 class="font-bold text-rose-700 mb-2 flex items-center gap-2"><i class="fa-solid fa-box-archive"></i>
+                Auditoría de Inventario</h4>
+              <p class="text-xs text-slate-600 leading-relaxed">Ajusta o edita el stock de insumos secos, proteínas y
+                vegetales e imprime reportes diarios con firmas de validación.</p>
             </div>
           </div>
         </div>
       </section>
 
-      <!-- TAB: ESTUDIANTES 5TO AÑO -->
+      <!-- TAB: ESTUDIANTES (CON SELECCIÓN DE AÑOS ESCOLARES) -->
       <section id="tab-content-estudiantes" class="hidden space-y-6">
         <div
-          class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+          class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-6 rounded-3xl border border-slate-200/80 shadow-xl shadow-slate-100">
           <div>
-            <h3 class="text-lg font-bold text-slate-900">Registro Nutricional de Estudiantes (5to Año)</h3>
-            <p class="text-xs text-slate-500">Cálculo automatizado del Diagnóstico IMC OMS</p>
+            <h3 class="text-xl font-black text-slate-900">Registro Estudiantil (Sección "U" Técnico)</h3>
+            <p class="text-xs font-medium text-slate-400 mt-0.5">Control antropométrico, IMC y condiciones de salud</p>
           </div>
-          <div class="flex items-center gap-2">
+          <div class="flex items-center gap-2.5">
             <button type="button" onclick="printReport('Estudiantes')"
-              class="bg-slate-800 hover:bg-slate-900 text-white font-semibold text-xs px-4 py-2.5 rounded-xl transition flex items-center gap-2 shadow-sm">
-              <i class="fa-solid fa-print"></i> Imprimir Reporte Nutricional
+              class="bg-slate-800 hover:bg-slate-900 text-white font-bold text-xs px-4 py-3 rounded-2xl transition flex items-center gap-2 shadow-sm">
+              <i class="fa-solid fa-print"></i> Imprimir Reporte
             </button>
             <button type="button" onclick="openStudentModal()"
-              class="bg-brand-600 hover:bg-brand-700 text-white font-semibold text-xs px-4 py-2.5 rounded-xl transition flex items-center gap-2 shadow-md shadow-brand-500/20">
+              class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:opacity-95 text-white font-bold text-xs px-5 py-3 rounded-2xl transition flex items-center gap-2 shadow-lg shadow-blue-600/25">
               <i class="fa-solid fa-user-plus"></i> Nuevo Estudiante
             </button>
           </div>
         </div>
 
-        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <!-- Botones de Años Escolares -->
+        <div class="flex gap-2 overflow-x-auto pb-1" id="years-nav-container">
+          <button type="button" onclick="switchStudentYear('1er Año')" id="btn-year-1er-ano"
+            class="px-5 py-2.5 rounded-2xl text-xs font-bold transition bg-blue-600 text-white shadow-md shadow-blue-600/20 flex items-center gap-2">
+            <i class="fa-solid fa-school"></i> 1er Año
+          </button>
+          <button type="button" onclick="switchStudentYear('2do Año')" id="btn-year-2do-ano"
+            class="px-5 py-2.5 rounded-2xl text-xs font-bold transition bg-white text-slate-600 hover:bg-slate-100 border border-slate-200 flex items-center gap-2">
+            <i class="fa-solid fa-school"></i> 2do Año
+          </button>
+          <button type="button" onclick="switchStudentYear('3er Año')" id="btn-year-3er-ano"
+            class="px-5 py-2.5 rounded-2xl text-xs font-bold transition bg-white text-slate-600 hover:bg-slate-100 border border-slate-200 flex items-center gap-2">
+            <i class="fa-solid fa-school"></i> 3er Año
+          </button>
+          <button type="button" onclick="switchStudentYear('4to Año')" id="btn-year-4to-ano"
+            class="px-5 py-2.5 rounded-2xl text-xs font-bold transition bg-white text-slate-600 hover:bg-slate-100 border border-slate-200 flex items-center gap-2">
+            <i class="fa-solid fa-school"></i> 4to Año
+          </button>
+          <button type="button" onclick="switchStudentYear('5to Año')" id="btn-year-5to-ano"
+            class="px-5 py-2.5 rounded-2xl text-xs font-bold transition bg-white text-slate-600 hover:bg-slate-100 border border-slate-200 flex items-center gap-2">
+            <i class="fa-solid fa-school"></i> 5to Año
+          </button>
+        </div>
+
+        <div class="bg-white rounded-3xl border border-slate-200/80 shadow-xl shadow-slate-100 overflow-hidden">
+          <div class="p-4 bg-slate-50/50 border-b border-slate-100 flex items-center justify-between">
+            <span class="text-xs font-extrabold uppercase tracking-wider text-slate-500"
+              id="current-year-label">Mostrando estudiantes de: 1er Año</span>
+          </div>
           <div class="overflow-x-auto">
             <table class="w-full text-left text-sm text-slate-600">
-              <thead class="bg-slate-50 text-xs uppercase font-bold text-slate-500 border-b border-slate-200">
+              <thead class="bg-slate-50/80 text-xs uppercase font-extrabold text-slate-500 border-b border-slate-200">
                 <tr>
-                  <th class="p-4">Estudiante</th>
-                  <th class="p-4">Edad</th>
-                  <th class="p-4">Peso (kg)</th>
-                  <th class="p-4">Talla (m)</th>
-                  <th class="p-4">IMC</th>
-                  <th class="p-4">Diagnóstico OMS</th>
-                  <th class="p-4 text-right actions-column">Acciones</th>
+                  <th class="p-5">Estudiante</th>
+                  <th class="p-5">Edad / Género</th>
+                  <th class="p-5">Peso / Altura</th>
+                  <th class="p-5">IMC</th>
+                  <th class="p-5.5">Alergias / Intolerancias</th>
+                  <th class="p-5.5">Condición Médica</th>
+                  <th class="p-5 text-right actions-column">Acciones</th>
                 </tr>
               </thead>
               <tbody id="students-table-body" class="divide-y divide-slate-100">
@@ -357,42 +415,40 @@
         </div>
       </section>
 
-      <!-- TAB: PERSONAL DE COCINA -->
+      <!-- TAB: PERSONAL DE COCINA & ASISTENCIA SEMANAL -->
       <section id="tab-content-cocina" class="hidden space-y-6">
         <div
-          class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+          class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-6 rounded-3xl border border-slate-200/80 shadow-xl shadow-slate-100">
           <div>
-            <h3 class="text-lg font-bold text-slate-900">Personal de Cocina y Asistencia Diaria</h3>
-            <p class="text-xs text-slate-500">Gestión de turnos, certificados de salud y pase de lista</p>
+            <h3 class="text-xl font-black text-slate-900">Personal de Cocina y Asistencia Semanal</h3>
+            <p class="text-xs font-medium text-slate-400 mt-0.5">Gestión de turnos, certificados de salud y registro
+              semanal (Lunes a Viernes)</p>
           </div>
           <div class="flex flex-wrap items-center gap-3">
-            <div class="flex items-center gap-2 bg-slate-100 px-3 py-1.5 rounded-xl border border-slate-200 text-xs">
-              <label class="font-bold text-slate-600">Fecha:</label>
+            <div
+              class="flex items-center gap-2 bg-slate-100 px-3.5 py-2 rounded-2xl border border-slate-200 text-xs shadow-inner">
+              <label class="font-bold text-slate-600"><i class="fa-regular fa-calendar text-amber-500"></i>
+                Semana de:</label>
               <input type="date" id="attendance-date" onchange="loadAllData()"
-                class="bg-transparent font-medium text-slate-800 focus:outline-none">
+                class="bg-transparent font-bold text-slate-800 focus:outline-none">
             </div>
             <button type="button" onclick="printReport('Cocina')"
-              class="bg-slate-800 hover:bg-slate-900 text-white font-semibold text-xs px-4 py-2.5 rounded-xl transition flex items-center gap-2 shadow-sm">
-              <i class="fa-solid fa-print"></i> Imprimir Planilla Asistencia
+              class="bg-slate-800 hover:bg-slate-900 text-white font-bold text-xs px-4 py-3 rounded-2xl transition flex items-center gap-2 shadow-sm">
+              <i class="fa-solid fa-print"></i> Imprimir Planilla Semanal
             </button>
             <button type="button" onclick="openKitchenModal()"
-              class="bg-brand-600 hover:bg-brand-700 text-white font-semibold text-xs px-4 py-2.5 rounded-xl transition flex items-center gap-2 shadow-md shadow-brand-500/20">
+              class="bg-gradient-to-r from-amber-500 to-orange-600 hover:opacity-95 text-white font-bold text-xs px-5 py-3 rounded-2xl transition flex items-center gap-2 shadow-lg shadow-amber-500/25">
               <i class="fa-solid fa-user-gear"></i> Registrar Personal
             </button>
           </div>
         </div>
 
-        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="bg-white rounded-3xl border border-slate-200/80 shadow-xl shadow-slate-100 overflow-hidden">
           <div class="overflow-x-auto">
             <table class="w-full text-left text-sm text-slate-600">
-              <thead class="bg-slate-50 text-xs uppercase font-bold text-slate-500 border-b border-slate-200">
-                <tr>
-                  <th class="p-4">Nombre</th>
-                  <th class="p-4">Turno</th>
-                  <th class="p-4">Certificado Salud</th>
-                  <th class="p-4">Asistencia Hoy</th>
-                  <th class="p-4 text-right actions-column">Acciones</th>
-                </tr>
+              <thead id="kitchen-table-head"
+                class="bg-slate-50/80 text-xs uppercase font-extrabold text-slate-500 border-b border-slate-200">
+                <!-- Generado dinámicamente con Lunes a Viernes -->
               </thead>
               <tbody id="kitchen-table-body" class="divide-y divide-slate-100">
                 <!-- Dinámico -->
@@ -405,39 +461,113 @@
       <!-- TAB: INVENTARIO -->
       <section id="tab-content-inventario" class="hidden space-y-6">
         <div
-          class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+          class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-6 rounded-3xl border border-slate-200/80 shadow-xl shadow-slate-100">
           <div>
-            <h3 class="text-lg font-bold text-slate-900">Inventario Diario de Alimentos</h3>
-            <p class="text-xs text-slate-500">Stock de Rubros Secos, Proteínas y Hortalizas</p>
+            <h3 class="text-xl font-black text-slate-900">Inventario y Control de Alimentos</h3>
+            <p class="text-xs font-medium text-slate-400 mt-0.5">Gestión de rubros secos, proteínas y hortalizas</p>
           </div>
           <div class="flex items-center gap-2">
             <button type="button" onclick="printReport('Inventario')"
-              class="bg-slate-800 hover:bg-slate-900 text-white font-semibold text-xs px-4 py-2.5 rounded-xl transition flex items-center gap-2 shadow-sm">
-              <i class="fa-solid fa-print"></i> Imprimir Reporte Inventario
+              class="bg-slate-800 hover:bg-slate-900 text-white font-bold text-xs px-4 py-3 rounded-2xl transition flex items-center gap-2 shadow-sm">
+              <i class="fa-solid fa-print"></i> Imprimir Reporte
             </button>
             <button type="button" onclick="openInventoryModal()"
-              class="bg-brand-600 hover:bg-brand-700 text-white font-semibold text-xs px-4 py-2.5 rounded-xl transition flex items-center gap-2 shadow-md shadow-brand-500/20">
+              class="bg-gradient-to-r from-emerald-500 to-teal-600 hover:opacity-95 text-white font-bold text-xs px-5 py-3 rounded-2xl transition flex items-center gap-2 shadow-lg shadow-emerald-500/25">
               <i class="fa-solid fa-plus"></i> Agregar Insumo
             </button>
           </div>
         </div>
 
-        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="bg-white rounded-3xl border border-slate-200/80 shadow-xl shadow-slate-100 overflow-hidden">
           <div class="overflow-x-auto">
             <table class="w-full text-left text-sm text-slate-600">
-              <thead class="bg-slate-50 text-xs uppercase font-bold text-slate-500 border-b border-slate-200">
+              <thead class="bg-slate-50/80 text-xs uppercase font-extrabold text-slate-500 border-b border-slate-200">
                 <tr>
-                  <th class="p-4">Nombre del Insumo</th>
-                  <th class="p-4">Categoría</th>
-                  <th class="p-4">Cantidad Stock</th>
-                  <th class="p-4">Unidad</th>
-                  <th class="p-4 text-right actions-column">Acciones</th>
+                  <th class="p-5">Nombre del Insumo</th>
+                  <th class="p-5">Categoría</th>
+                  <th class="p-5">Cantidad Stock</th>
+                  <th class="p-5">Estado de Alerta</th>
+                  <th class="p-5 text-right actions-column">Acciones</th>
                 </tr>
               </thead>
               <tbody id="inventory-table-body" class="divide-y divide-slate-100">
                 <!-- Dinámico -->
               </tbody>
             </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB: MENÚ Y DESPACHO MÚLTIPLE -->
+      <section id="tab-content-menu" class="hidden space-y-6">
+        <div
+          class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-6 rounded-3xl border border-slate-200/80 shadow-xl shadow-slate-100">
+          <div>
+            <h3 class="text-xl font-black text-slate-900">Planificador de Menús</h3>
+            <p class="text-xs font-medium text-slate-400 mt-0.5">Selección de múltiples ingredientes con descuento
+              automático en el inventario</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <button type="button" onclick="printReport('Menu')"
+              class="bg-slate-800 hover:bg-slate-900 text-white font-bold text-xs px-4 py-3 rounded-2xl transition flex items-center gap-2 shadow-sm">
+              <i class="fa-solid fa-print"></i> Imprimir Menú del Día
+            </button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div
+            class="bg-white p-6 rounded-3xl border border-slate-200/80 shadow-xl shadow-slate-100 space-y-4 md:col-span-1 no-print">
+            <h4 class="font-extrabold text-slate-800 flex items-center gap-2 text-base">
+              <span class="w-8 h-8 rounded-xl bg-purple-100 text-purple-600 flex items-center justify-center text-sm"><i
+                  class="fa-solid fa-bowl-food"></i></span>
+              Registrar Menú del día
+            </h4>
+            <div class="space-y-3.5">
+              <div>
+                <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Nombre del Plato / Menú</label>
+                <input type="text" id="menu-plato-name" placeholder="Ej: Arroz con Pollo y Ensalada"
+                  class="w-full p-3 text-sm bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-purple-500 focus:bg-white focus:outline-none">
+              </div>
+
+              <div>
+                <div class="flex justify-between items-center mb-1.5">
+                  <label class="block text-xs font-bold uppercase text-slate-600">Ingredientes a Descontar</label>
+                  <button type="button" onclick="agregarFilaIngrediente()"
+                    class="text-xs text-purple-600 font-bold hover:underline flex items-center gap-1">
+                    <i class="fa-solid fa-plus"></i> Añadir insumo
+                  </button>
+                </div>
+                <div id="ingredients-rows-container" class="space-y-2.5 max-h-60 overflow-y-auto pr-1"></div>
+              </div>
+
+              <button type="button" onclick="procesarMenuCompleto()"
+                class="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:opacity-95 text-white font-bold text-xs py-3.5 rounded-2xl transition shadow-lg shadow-purple-600/25 mt-2">
+                <i class="fa-solid fa-floppy-disk"></i> Procesar Despacho y Descontar Stock
+              </button>
+            </div>
+          </div>
+
+          <div
+            class="bg-white p-6 rounded-3xl border border-slate-200/80 shadow-xl shadow-slate-100 space-y-4 md:col-span-2">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-3.5">
+              <h4 class="font-extrabold text-slate-800">Historial de Menús Registrados</h4>
+              <span id="menu-fecha-badge"
+                class="text-xs bg-purple-50 text-purple-700 font-bold px-3.5 py-1.5 rounded-full border border-purple-200"></span>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-sm text-slate-600">
+                <thead class="bg-slate-50/80 text-xs uppercase font-extrabold text-slate-500 border-b border-slate-200">
+                  <tr>
+                    <th class="p-3.5">Plato / Menú</th>
+                    <th class="p-3.5">Ingredientes y Cantidades</th>
+                    <th class="p-3.5">Fecha</th>
+                    <th class="p-3.5 text-right actions-column">Acción</th>
+                  </tr>
+                </thead>
+                <tbody id="menu-table-body" class="divide-y divide-slate-100"></tbody>
+              </table>
+            </div>
           </div>
         </div>
       </section>
@@ -449,128 +579,164 @@
   <div class="print-footer">
     <div class="signature-box">
       <p><strong>Elaborado por:</strong></p>
-      <p style="margin-top: 30px;">Firma del Responsable Nutricional / Cocina</p>
+      <p style="margin-top: 30px;">Firma del vocero/a institucional</p>
     </div>
     <div class="signature-box">
       <p><strong>Validado por:</strong></p>
-      <p style="margin-top: 30px;">Firma de la Dirección Escolar / CNAE</p>
+      <p style="margin-top: 30px;">Firma director/a</p>
     </div>
   </div>
 
-  <!-- MODAL ESTUDIANTE (Creación y Edición) -->
+  <!-- MODAL ESTUDIANTE -->
   <div id="modal-student"
-    class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center p-4">
-    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl">
-      <h3 id="student-modal-title" class="text-lg font-bold text-slate-900 mb-4">Registrar Estudiante</h3>
+    class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-md hidden items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-md w-full p-7 shadow-2xl border border-slate-100">
+      <h3 id="student-modal-title" class="text-lg font-black text-slate-900 mb-4">Registrar Estudiante</h3>
       <form onsubmit="saveStudent(event)" class="space-y-4">
         <input type="hidden" id="student-id">
         <div>
-          <label class="block text-xs font-semibold uppercase text-slate-600 mb-1">Nombre Completo</label>
-          <input type="text" id="student-name" required class="w-full p-2.5 text-sm border border-slate-300 rounded-lg">
+          <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Nombre Completo</label>
+          <input type="text" id="student-name" required
+            class="w-full p-3 text-sm bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:bg-white focus:outline-none">
         </div>
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="block text-xs font-semibold uppercase text-slate-600 mb-1">Cédula</label>
+            <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Cédula</label>
             <input type="text" id="student-cedula" required
-              class="w-full p-2.5 text-sm border border-slate-300 rounded-lg">
+              class="w-full p-3 text-sm bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:bg-white focus:outline-none">
           </div>
           <div>
-            <label class="block text-xs font-semibold uppercase text-slate-600 mb-1">Edad (Años)</label>
+            <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Género</label>
+            <select id="student-genero"
+              class="w-full p-3 text-sm bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:bg-white focus:outline-none">
+              <option value="Masculino">Masculino</option>
+              <option value="Femenino">Femenino</option>
+            </select>
+          </div>
+        </div>
+        <div class="grid grid-cols-3 gap-3">
+          <div>
+            <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Edad</label>
             <input type="number" id="student-edad" required min="10" max="25"
-              class="w-full p-2.5 text-sm border border-slate-300 rounded-lg">
+              class="w-full p-3 text-sm bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:bg-white focus:outline-none">
           </div>
-        </div>
-        <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="block text-xs font-semibold uppercase text-slate-600 mb-1">Peso (kg)</label>
+            <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Peso (kg)</label>
             <input type="number" step="0.1" id="student-peso" required
-              class="w-full p-2.5 text-sm border border-slate-300 rounded-lg">
+              class="w-full p-3 text-sm bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:bg-white focus:outline-none">
           </div>
           <div>
-            <label class="block text-xs font-semibold uppercase text-slate-600 mb-1">Talla (m e.g. 1.70)</label>
+            <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Talla (m)</label>
             <input type="number" step="0.01" id="student-talla" required
-              class="w-full p-2.5 text-sm border border-slate-300 rounded-lg">
+              class="w-full p-3 text-sm bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:bg-white focus:outline-none">
           </div>
         </div>
-        <div class="flex justify-end gap-3 pt-4 border-t border-slate-100">
+        <div>
+          <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Alergias o Intolerancias
+            Alimentarias</label>
+          <input type="text" id="student-alergias" placeholder="Ej: Lácteos, Celíaco, Maní, Ninguna..."
+            class="w-full p-3 text-sm bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:bg-white focus:outline-none">
+        </div>
+        <div>
+          <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Condición Médica / Observaciones</label>
+          <input type="text" id="student-condicion" placeholder="Ej: Diabetes, Asma, Dieta hiposódica..."
+            class="w-full p-3 text-sm bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:bg-white focus:outline-none">
+        </div>
+        <div class="flex justify-end gap-3 pt-3 border-t border-slate-100">
           <button type="button" onclick="closeStudentModal()"
-            class="px-4 py-2 text-xs font-semibold bg-slate-100 text-slate-600 rounded-lg hover:bg-slate-200">Cancelar</button>
+            class="px-5 py-2.5 text-xs font-bold bg-slate-100 text-slate-600 rounded-xl hover:bg-slate-200 transition">Cancelar</button>
           <button type="submit"
-            class="px-4 py-2 text-xs font-semibold bg-brand-600 text-white rounded-lg hover:bg-brand-700">Guardar
+            class="px-5 py-2.5 text-xs font-bold bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition shadow-md shadow-blue-600/20">Guardar
             Cambios</button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- MODAL COCINA (Creación y Edición) -->
+  <!-- MODAL COCINA -->
   <div id="modal-kitchen"
-    class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center p-4">
-    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl">
-      <h3 id="kitchen-modal-title" class="text-lg font-bold text-slate-900 mb-4">Registrar Personal de Cocina</h3>
+    class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-md hidden items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-md w-full p-7 shadow-2xl border border-slate-100">
+      <h3 id="kitchen-modal-title" class="text-lg font-black text-slate-900 mb-4">Registrar Personal de Cocina</h3>
       <form onsubmit="saveKitchen(event)" class="space-y-4">
         <input type="hidden" id="kitchen-id">
         <div>
-          <label class="block text-xs font-semibold uppercase text-slate-600 mb-1">Nombre Completo</label>
-          <input type="text" id="kitchen-name" required class="w-full p-2.5 text-sm border border-slate-300 rounded-lg">
+          <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Nombre Completo</label>
+          <input type="text" id="kitchen-name" required
+            class="w-full p-3 text-sm bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-amber-500 focus:bg-white focus:outline-none">
         </div>
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="block text-xs font-semibold uppercase text-slate-600 mb-1">Cédula</label>
+            <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Cédula</label>
             <input type="text" id="kitchen-cedula" required
-              class="w-full p-2.5 text-sm border border-slate-300 rounded-lg">
+              class="w-full p-3 text-sm bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-amber-500 focus:bg-white focus:outline-none">
           </div>
           <div>
-            <label class="block text-xs font-semibold uppercase text-slate-600 mb-1">Turno</label>
-            <select id="kitchen-turno" class="w-full p-2.5 text-sm border border-slate-300 rounded-lg">
+            <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Género</label>
+            <select id="kitchen-genero"
+              class="w-full p-3 text-sm bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-amber-500 focus:bg-white focus:outline-none">
+              <option value="Femenino">Femenino</option>
+              <option value="Masculino">Masculino</option>
+            </select>
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Turno</label>
+            <select id="kitchen-turno"
+              class="w-full p-3 text-sm bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-amber-500 focus:bg-white focus:outline-none">
               <option value="Mañana">Mañana</option>
               <option value="Tarde">Tarde</option>
               <option value="Completo">Completo</option>
             </select>
           </div>
+          <div>
+            <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Certificado de Salud</label>
+            <select id="kitchen-certificado"
+              class="w-full p-3 text-sm bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-amber-500 focus:bg-white focus:outline-none">
+              <option value="Vigente">Vigente</option>
+              <option value="Vencido">Vencido</option>
+            </select>
+          </div>
         </div>
-        <div>
-          <label class="block text-xs font-semibold uppercase text-slate-600 mb-1">Certificado de Salud</label>
-          <select id="kitchen-certificado" class="w-full p-2.5 text-sm border border-slate-300 rounded-lg">
-            <option value="Vigente">Vigente</option>
-            <option value="Vencido">Vencido</option>
-          </select>
-        </div>
-        <div class="flex justify-end gap-3 pt-4 border-t border-slate-100">
+        <div class="flex justify-end gap-3 pt-3 border-t border-slate-100">
           <button type="button" onclick="closeKitchenModal()"
-            class="px-4 py-2 text-xs font-semibold bg-slate-100 text-slate-600 rounded-lg hover:bg-slate-200">Cancelar</button>
+            class="px-5 py-2.5 text-xs font-bold bg-slate-100 text-slate-600 rounded-xl hover:bg-slate-200 transition">Cancelar</button>
           <button type="submit"
-            class="px-4 py-2 text-xs font-semibold bg-brand-600 text-white rounded-lg hover:bg-brand-700">Guardar
+            class="px-5 py-2.5 text-xs font-bold bg-amber-600 text-white rounded-xl hover:bg-amber-700 transition shadow-md shadow-amber-600/20">Guardar
             Cambios</button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- MODAL INVENTARIO (Creación y Edición) -->
+  <!-- MODAL INVENTARIO -->
   <div id="modal-inventory"
-    class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center p-4">
-    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl">
-      <h3 id="inventory-modal-title" class="text-lg font-bold text-slate-900 mb-4">Registrar Insumo de Alimentos</h3>
+    class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-md hidden items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-md w-full p-7 shadow-2xl border border-slate-100">
+      <h3 id="inventory-modal-title" class="text-lg font-black text-slate-900 mb-4">Registrar Insumo de Alimentos</h3>
       <form onsubmit="saveInventory(event)" class="space-y-4">
         <input type="hidden" id="inventory-id">
         <div>
-          <label class="block text-xs font-semibold uppercase text-slate-600 mb-1">Nombre del Rubro / Alimento</label>
+          <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Nombre del Rubro / Alimento</label>
           <input type="text" id="inv-nombre" required placeholder="Ej: Harina de Maíz, Carne de Res, Tomate..."
-            class="w-full p-2.5 text-sm border border-slate-300 rounded-lg">
+            class="w-full p-3 text-sm bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-emerald-500 focus:bg-white focus:outline-none">
         </div>
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="block text-xs font-semibold uppercase text-slate-600 mb-1">Categoría</label>
-            <select id="inv-categoria" class="w-full p-2.5 text-sm border border-slate-300 rounded-lg">
+            <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Categoría</label>
+            <select id="inv-categoria"
+              class="w-full p-3 text-sm bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-emerald-500 focus:bg-white focus:outline-none">
               <option value="Rubros Secos">Rubros Secos</option>
               <option value="Proteína">Proteína</option>
               <option value="Verdura / Hortaliza">Verdura / Hortaliza</option>
+              <option value="Fruta">Fruta</option>
             </select>
           </div>
           <div>
-            <label class="block text-xs font-semibold uppercase text-slate-600 mb-1">Unidad</label>
-            <select id="inv-unidad" class="w-full p-2.5 text-sm border border-slate-300 rounded-lg">
+            <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Unidad</label>
+            <select id="inv-unidad"
+              class="w-full p-3 text-sm bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-emerald-500 focus:bg-white focus:outline-none">
               <option value="kg">Kilogramos (kg)</option>
               <option value="litros">Litros (l)</option>
               <option value="unidades">Unidades</option>
@@ -579,15 +745,15 @@
           </div>
         </div>
         <div>
-          <label class="block text-xs font-semibold uppercase text-slate-600 mb-1">Cantidad Stock</label>
+          <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Cantidad Stock</label>
           <input type="number" step="0.1" id="inv-cantidad" required
-            class="w-full p-2.5 text-sm border border-slate-300 rounded-lg">
+            class="w-full p-3 text-sm bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-emerald-500 focus:bg-white focus:outline-none">
         </div>
-        <div class="flex justify-end gap-3 pt-4 border-t border-slate-100">
+        <div class="flex justify-end gap-3 pt-3 border-t border-slate-100">
           <button type="button" onclick="closeInventoryModal()"
-            class="px-4 py-2 text-xs font-semibold bg-slate-100 text-slate-600 rounded-lg hover:bg-slate-200">Cancelar</button>
+            class="px-5 py-2.5 text-xs font-bold bg-slate-100 text-slate-600 rounded-xl hover:bg-slate-200 transition">Cancelar</button>
           <button type="submit"
-            class="px-4 py-2 text-xs font-semibold bg-brand-600 text-white rounded-lg hover:bg-brand-700">Guardar
+            class="px-5 py-2.5 text-xs font-bold bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition shadow-md shadow-emerald-600/20">Guardar
             Cambios</button>
         </div>
       </form>
@@ -601,38 +767,37 @@
     let db = null;
     let firebaseConfig = null;
 
-    // Datos de cache en memoria
     let currentStudents = [];
     let currentKitchen = [];
     let currentInventory = [];
+    let currentMenuLogs = [];
+    let selectedStudentYear = '1er Año'; // Año por defecto activo
 
-    // Datos demo por defecto
     let demoData = {
       students: [
-        { id: '1', name: 'Carlos Mendoza', cedula: 'V-28102938', edad: 17, peso: 62.5, talla: 1.72 },
-        { id: '2', name: 'Mariana Silva', cedula: 'V-28492019', edad: 16, peso: 51.0, talla: 1.60 },
-        { id: '3', name: 'José Gregorio Pérez', cedula: 'V-27938491', edad: 17, peso: 74.0, talla: 1.75 },
-        { id: '4', name: 'Ana Sofía Rivas', cedula: 'V-28594021', edad: 16, peso: 48.5, talla: 1.58 },
-        { id: '5', name: 'Luis Alejandro Gómez', cedula: 'V-28111222', edad: 18, peso: 82.0, talla: 1.80 }
+        { id: '1', year: '1er Año', name: 'Carlos Mendoza', cedula: 'V-28102938', genero: 'Masculino', edad: 12, peso: 42.5, talla: 1.50, alergias: 'Lácteos (Intolerante)', condicion: 'Ninguna' },
+        { id: '2', year: '1er Año', name: 'Mariana Silva', cedula: 'V-28492019', genero: 'Femenino', edad: 12, peso: 40.0, talla: 1.48, alergias: 'Ninguna', condicion: 'Asma' },
+        { id: '3', year: '5to Año', name: 'José Gregorio Pérez', cedula: 'V-27938491', genero: 'Masculino', edad: 17, peso: 74.0, talla: 1.75, alergias: 'Mariscos', condicion: 'Ninguna' },
+        { id: '4', year: '3er Año', name: 'Ana Sofía Rivas', cedula: 'V-28594021', genero: 'Femenino', edad: 14, peso: 48.5, talla: 1.58, alergias: 'Ninguna', condicion: 'Ninguna' }
       ],
       kitchen: [
-        { id: '1', name: 'Carmen Rosa Torres', cedula: 'V-12493820', turno: 'Mañana', certificado: 'Vigente', asistencia: {} },
-        { id: '2', name: 'María Elena Suárez', cedula: 'V-14920394', turno: 'Tarde', certificado: 'Vigente', asistencia: {} },
-        { id: '3', name: 'Pedro Antonio Rojas', cedula: 'V-10928394', turno: 'Completo', certificado: 'Vencido', asistencia: {} }
+        { id: '1', name: 'Carmen Rosa Torres', cedula: 'V-12493820', genero: 'Femenino', turno: 'Mañana', certificado: 'Vigente', asistencia: {} },
+        { id: '2', name: 'María Elena Suárez', cedula: 'V-14920394', genero: 'Femenino', turno: 'Tarde', certificado: 'Vigente', asistencia: {} },
+        { id: '3', name: 'Pedro Antonio Rojas', cedula: 'V-10928394', genero: 'Masculino', turno: 'Completo', certificado: 'Vencido', asistencia: {} }
       ],
       inventory: [
         { id: '1', nombre: 'Arroz Blanco', categoria: 'Rubros Secos', cantidad: 120, unidad: 'kg' },
-        { id: '2', nombre: 'Carne de Res', categoria: 'Proteína', cantidad: 45, unidad: 'kg' },
+        { id: '2', nombre: 'Carne de Res', categoria: 'Proteína', cantidad: 8, unidad: 'kg' },
         { id: '3', nombre: 'Papa', categoria: 'Verdura / Hortaliza', cantidad: 60, unidad: 'kg' },
-        { id: '4', nombre: 'Pasta Larga', categoria: 'Rubros Secos', cantidad: 90, unidad: 'kg' },
-        { id: '5', nombre: 'Pollo Entero', categoria: 'Proteína', cantidad: 55, unidad: 'kg' }
-      ]
+        { id: '4', nombre: 'Aceite Comestible', categoria: 'Rubros Secos', cantidad: 5, unidad: 'litros' }
+      ],
+      menuLogs: []
     };
 
     window.onload = function () {
-      // Asignar fecha actual por defecto en la asistencia
       const today = new Date().toISOString().split('T')[0];
       document.getElementById('attendance-date').value = today;
+      document.getElementById('menu-fecha-badge').innerText = "Fecha: " + today;
 
       const savedCfg = localStorage.getItem('nutri_fb_cfg');
       if (savedCfg) {
@@ -655,7 +820,7 @@
       firebaseConfig = { apiKey, authDomain: `${projectId}.firebaseapp.com`, projectId, storageBucket: `${projectId}.appspot.com`, messagingSenderId: "0000000000", appId: "1:000:web:000" };
       localStorage.setItem('nutri_fb_cfg', JSON.stringify(firebaseConfig));
       initFirebaseAuto();
-      alert('¡Credenciales de Firebase vinculadas! Ya puedes Iniciar Sesión o Crear Cuenta.');
+      alert('¡Credenciales de Firebase vinculadas!');
     }
 
     function initFirebaseAuto() {
@@ -697,13 +862,13 @@
 
     function switchAuthTab(tab) {
       if (tab === 'login') {
-        document.getElementById('tab-login').className = "flex-1 pb-3 text-sm font-semibold text-brand-600 border-b-2 border-brand-600";
-        document.getElementById('tab-register').className = "flex-1 pb-3 text-sm font-medium text-slate-400";
+        document.getElementById('tab-login').className = "flex-1 py-2.5 text-xs font-bold rounded-lg bg-white text-emerald-600 shadow-sm transition";
+        document.getElementById('tab-register').className = "flex-1 py-2.5 text-xs font-bold rounded-lg text-slate-500 transition";
         document.getElementById('form-login').classList.remove('hidden');
         document.getElementById('form-register').classList.add('hidden');
       } else {
-        document.getElementById('tab-register').className = "flex-1 pb-3 text-sm font-semibold text-brand-600 border-b-2 border-brand-600";
-        document.getElementById('tab-login').className = "flex-1 pb-3 text-sm font-medium text-slate-400";
+        document.getElementById('tab-register').className = "flex-1 py-2.5 text-xs font-bold rounded-lg bg-white text-indigo-600 shadow-sm transition";
+        document.getElementById('tab-login').className = "flex-1 py-2.5 text-xs font-bold rounded-lg text-slate-500 transition";
         document.getElementById('form-register').classList.remove('hidden');
         document.getElementById('form-login').classList.add('hidden');
       }
@@ -711,10 +876,15 @@
 
     function handleLogin(e) {
       e.preventDefault();
-      if (!db) { alert('Haz clic en "Guardar Credenciales" o entra con "Modo Demo Local".'); return; }
+      if (!db) { alert('Primero configura Firebase o usa el Modo Demo Local.'); return; }
       const email = document.getElementById('login-email').value;
       const pass = document.getElementById('login-password').value;
-      firebase.auth().signInWithEmailAndPassword(email, pass).catch(err => alert(err.message));
+
+      firebase.auth().signInWithEmailAndPassword(email, pass)
+        .then(() => alert("¡Inicio de sesión exitoso!"))
+        .catch(err => {
+          alert("Error de Firebase: " + err.code + "\n" + err.message);
+        });
     }
 
     function handleRegister(e) {
@@ -726,13 +896,56 @@
     }
 
     function switchTab(tabName) {
-      ['dashboard', 'estudiantes', 'cocina', 'inventario'].forEach(t => {
+      ['dashboard', 'estudiantes', 'cocina', 'inventario', 'menu'].forEach(t => {
         document.getElementById(`tab-content-${t}`).classList.add('hidden');
-        document.getElementById(`nav-${t}`).className = "py-4 text-sm font-medium text-slate-500 hover:text-slate-800 flex items-center gap-2";
+        const btn = document.getElementById(`nav-${t}`);
+        btn.className = "py-2.5 px-4 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-100 flex items-center gap-2 transition";
       });
       document.getElementById(`tab-content-${tabName}`).classList.remove('hidden');
-      document.getElementById(`nav-${tabName}`).className = "py-4 text-sm font-semibold text-brand-600 border-b-2 border-brand-600 flex items-center gap-2";
+      const activeBtn = document.getElementById(`nav-${tabName}`);
+
+      const colors = {
+        dashboard: "text-emerald-700 bg-emerald-50 border border-emerald-200 shadow-sm",
+        estudiantes: "text-blue-700 bg-blue-50 border border-blue-200 shadow-sm",
+        cocina: "text-amber-700 bg-amber-50 border border-amber-200 shadow-sm",
+        inventario: "text-teal-700 bg-teal-50 border border-teal-200 shadow-sm",
+        menu: "text-purple-700 bg-purple-50 border border-purple-200 shadow-sm"
+      };
+      activeBtn.className = `py-2.5 px-4 rounded-xl text-xs font-bold flex items-center gap-2 transition ${colors[tabName]}`;
       loadAllData();
+    }
+
+    function switchStudentYear(yearName) {
+      selectedStudentYear = yearName;
+      const years = ['1er Año', '2do Año', '3er Año', '4to Año', '5to Año'];
+
+      const idMap = {
+        '1er Año': '1er-ano',
+        '2do Año': '2do-ano',
+        '3er Año': '3er-ano',
+        '4to Año': '4to-ano',
+        '5to Año': '5to-ano'
+      };
+
+      years.forEach(y => {
+        const idSlug = idMap[y];
+        const btn = document.getElementById(`btn-year-${idSlug}`);
+        if (btn) {
+          if (y === yearName) {
+            btn.className = "px-5 py-2.5 rounded-2xl text-xs font-bold transition bg-blue-600 text-white shadow-md shadow-blue-600/20 flex items-center gap-2";
+          } else {
+            btn.className = "px-5 py-2.5 rounded-2xl text-xs font-bold transition bg-white text-slate-600 hover:bg-slate-100 border border-slate-200 flex items-center gap-2";
+          }
+        }
+      });
+
+      const label = document.getElementById('current-year-label');
+      if (label) {
+        label.innerText = `Mostrando estudiantes de: ${yearName}`;
+      }
+
+      // Actualiza la tabla de inmediato al hacer clic
+      renderStudents(currentStudents);
     }
 
     async function loadAllData() {
@@ -740,6 +953,7 @@
         currentStudents = demoData.students;
         currentKitchen = demoData.kitchen;
         currentInventory = demoData.inventory;
+        currentMenuLogs = demoData.menuLogs || [];
       } else if (db && currentUser) {
         try {
           const sSnap = await db.collection('users').doc(currentUser.uid).collection('students').get();
@@ -750,59 +964,84 @@
 
           const iSnap = await db.collection('users').doc(currentUser.uid).collection('inventory').get();
           currentInventory = iSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+          const mSnap = await db.collection('users').doc(currentUser.uid).collection('menuLogs').get();
+          currentMenuLogs = mSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         } catch (e) { console.error(e); }
       }
 
       renderStudents(currentStudents);
       renderKitchen(currentKitchen);
       renderInventory(currentInventory);
+
+      const container = document.getElementById('ingredients-rows-container');
+      if (container && container.children.length === 0) {
+        agregarFilaIngrediente();
+      }
+
+      renderMenuLogs(currentMenuLogs);
       updateDashboardStatsDynamic(currentStudents, currentKitchen, currentInventory);
     }
 
     function calculateIMC(peso, talla) {
       if (!talla || talla <= 0) return { imc: '0.0', label: 'N/D', color: 'bg-slate-100 text-slate-700' };
       const imc = peso / (talla * talla);
-      let label = 'Normal', color = 'bg-emerald-100 text-emerald-800';
-      if (imc < 18.5) { label = 'Bajo Peso'; color = 'bg-blue-100 text-blue-800'; }
-      else if (imc >= 25 && imc < 30) { label = 'Sobrepeso'; color = 'bg-amber-100 text-amber-800'; }
-      else if (imc >= 30) { label = 'Obesidad'; color = 'bg-rose-100 text-rose-800'; }
+      let label = 'Normal', color = 'bg-emerald-100 text-emerald-800 border border-emerald-200';
+      if (imc < 18.5) { label = 'Bajo Peso'; color = 'bg-blue-100 text-blue-800 border border-blue-200'; }
+      else if (imc >= 25 && imc < 30) { label = 'Sobrepeso'; color = 'bg-amber-100 text-amber-800 border border-amber-200'; }
+      else if (imc >= 30) { label = 'Obesidad'; color = 'bg-rose-100 text-rose-800 border border-rose-200'; }
       return { imc: imc.toFixed(1), label, color };
     }
 
-    // RENDERIZADO Y EDICIÓN - ESTUDIANTES
     function renderStudents(list) {
       const tbody = document.getElementById('students-table-body');
       tbody.innerHTML = '';
-      if (list.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-slate-400">No hay estudiantes registrados.</td></tr>`;
+
+      // Filtrar estudiantes por el año escolar seleccionado
+      const filteredList = list.filter(s => (s.year || '1er Año') === selectedStudentYear);
+
+      if (filteredList.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-slate-400">No hay estudiantes registrados en ${selectedStudentYear}.</td></tr>`;
         return;
       }
-      list.forEach(s => {
+      filteredList.forEach(s => {
         const res = calculateIMC(s.peso, s.talla);
+        const tieneAlergia = s.alergias && s.alergias.trim() !== '' && s.alergias.toLowerCase() !== 'ninguna';
+        const alergiaBadge = tieneAlergia
+          ? `<span class="bg-rose-100 text-rose-800 font-bold px-2.5 py-1 rounded-xl text-xs inline-flex items-center justify-center gap-2 w-fit mx-auto border border-rose-200"><i class="fa-solid fa-triangle-exclamation text-rose-500"></i> ${s.alergias}</span>`
+          : `<span class="text-slate-400 text-xs font-medium">Sin alergias</span>`;
+
+        const generoBadge = s.genero === 'Femenino'
+          ? `<span class="text-pink-600 bg-pink-50 border border-pink-200 px-2 py-0.5 rounded-lg text-[10px] font-bold"><i class="fa-solid fa-venus"></i> Femenino</span>`
+          : `<span class="text-blue-600 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded-lg text-[10px] font-bold"><i class="fa-solid fa-mars"></i> Masculino</span>`;
+
         tbody.innerHTML += `
-                    <tr class="hover:bg-slate-50 transition">
-                        <td class="p-4 font-medium text-slate-800">${s.name}<br><span class="text-xs text-slate-400 font-normal">${s.cedula}</span></td>
-                        <td class="p-4">${s.edad} años</td>
-                        <td class="p-4">${s.peso} kg</td>
-                        <td class="p-4">${s.talla} m</td>
-                        <td class="p-4 font-bold text-slate-900">${res.imc}</td>
-                        <td class="p-4"><span class="px-2.5 py-1 rounded-full text-xs font-semibold ${res.color}">${res.label}</span></td>
-                        <td class="p-4 text-right space-x-3 actions-column">
-                            <button type="button" onclick="editStudent('${s.id}')" title="Editar" class="text-slate-500 hover:text-brand-600 font-medium text-xs"><i class="fa-solid fa-pen-to-square"></i> Editar</button>
-                            <button type="button" onclick="deleteStudent('${s.id}')" title="Eliminar" class="text-slate-400 hover:text-rose-600"><i class="fa-solid fa-trash"></i></button>
-                        </td>
-                    </tr>`;
+          <tr class="hover:bg-slate-50/80 transition">
+              <td class="p-4 font-bold text-slate-800">${s.name}<br><span class="text-xs text-slate-400 font-normal">Cédula: ${s.cedula}</span></td>
+              <td class="p-4 font-medium">${s.edad} años<br>${generoBadge}</td>
+              <td class="p-4 font-medium">${s.peso} kg / ${s.talla} m</td>
+              <td class="p-4"><span class="px-3 py-1 rounded-xl text-xs font-bold ${res.color}">${res.imc} (${res.label})</span></td>
+              <td class="p-4">${alergiaBadge}</td>
+              <td class="p-4 text-xs font-bold text-indigo-600 bg-indigo-50/50 rounded-xl px-3 py-1 w-fit">${s.condicion || 'Normal'}</td>
+              <td class="p-4 text-right space-x-2 actions-column">
+                  <button type="button" onclick="editStudent('${s.id}')" class="text-blue-600 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-xl font-bold text-xs transition"><i class="fa-solid fa-pen-to-square"></i> Editar</button>
+                  <button type="button" onclick="deleteStudent('${s.id}')" class="text-rose-600 bg-rose-50 hover:bg-rose-100 px-3 py-1.5 rounded-xl font-bold text-xs transition"><i class="fa-solid fa-trash"></i></button>
+              </td>
+          </tr>`;
       });
     }
 
     function openStudentModal(editObj = null) {
-      document.getElementById('student-modal-title').innerText = editObj ? 'Editar Estudiante' : 'Registrar Estudiante (5to Año)';
+      document.getElementById('student-modal-title').innerText = editObj ? 'Editar Ficha Médica de Estudiante' : `Registrar Estudiante (${selectedStudentYear})`;
       document.getElementById('student-id').value = editObj ? editObj.id : '';
       document.getElementById('student-name').value = editObj ? editObj.name : '';
       document.getElementById('student-cedula').value = editObj ? editObj.cedula : '';
+      document.getElementById('student-genero').value = editObj ? editObj.genero || 'Masculino' : 'Masculino';
       document.getElementById('student-edad').value = editObj ? editObj.edad : '';
       document.getElementById('student-peso').value = editObj ? editObj.peso : '';
       document.getElementById('student-talla').value = editObj ? editObj.talla : '';
+      document.getElementById('student-alergias').value = editObj ? editObj.alergias || '' : '';
+      document.getElementById('student-condicion').value = editObj ? editObj.condicion || '' : '';
       document.getElementById('modal-student').classList.remove('hidden');
       document.getElementById('modal-student').classList.add('flex');
     }
@@ -817,11 +1056,15 @@
       e.preventDefault();
       const id = document.getElementById('student-id').value;
       const data = {
+        year: selectedStudentYear,
         name: document.getElementById('student-name').value,
         cedula: document.getElementById('student-cedula').value,
+        genero: document.getElementById('student-genero').value,
         edad: Number(document.getElementById('student-edad').value),
         peso: Number(document.getElementById('student-peso').value),
-        talla: Number(document.getElementById('student-talla').value)
+        talla: Number(document.getElementById('student-talla').value),
+        alergias: document.getElementById('student-alergias').value,
+        condicion: document.getElementById('student-condicion').value
       };
 
       if (isDemoMode) {
@@ -854,37 +1097,89 @@
       }
     }
 
-    // RENDERIZADO Y EDICIÓN - PERSONAL DE COCINA
+    // --- FUNCIONES DE ASISTENCIA SEMANAL (LUNES A VIERNES) ---
+    function getMonday(d) {
+      d = new Date(d);
+      let day = d.getDay();
+      let diff = d.getDate() - day + (day == 0 ? -6 : 1);
+      return new Date(d.setDate(diff));
+    }
+
+    function getWeekDays(refDateStr) {
+      let refDate = refDateStr ? new Date(refDateStr + 'T00:00:00') : new Date();
+      let monday = getMonday(refDate);
+      let days = [];
+      const labels = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes'];
+      for (let i = 0; i < 5; i++) {
+        let d = new Date(monday);
+        d.setDate(monday.getDate() + i);
+        let dateStr = d.toISOString().split('T')[0];
+        let formattedDate = `${labels[i]} ${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}`;
+        days.push({ label: labels[i], dateStr, formattedDate });
+      }
+      return days;
+    }
+
     function renderKitchen(list) {
+      const thead = document.getElementById('kitchen-table-head');
       const tbody = document.getElementById('kitchen-table-body');
+      thead.innerHTML = '';
       tbody.innerHTML = '';
+
+      const selectedDateStr = document.getElementById('attendance-date').value || new Date().toISOString().split('T')[0];
+      const weekDays = getWeekDays(selectedDateStr);
+
+      let headerHtml = `
+        <tr>
+          <th class="p-5">Nombre / Género</th>
+          <th class="p-5">Turno</th>
+          <th class="p-5">Certificado Salud</th>`;
+      weekDays.forEach(day => {
+        headerHtml += `<th class="p-3 text-center">${day.formattedDate}</th>`;
+      });
+
+      headerHtml += `<th class="p-5 text-right actions-column">Acciones</th></tr>`;
+      thead.innerHTML = headerHtml;
+
       if (list.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-slate-400">No hay personal registrado.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="${4 + weekDays.length}" class="p-6 text-center text-slate-400">No hay personal de cocina registrado.</td></tr>`;
         return;
       }
 
-      const selectedDate = document.getElementById('attendance-date').value || new Date().toISOString().split('T')[0];
-
       list.forEach(k => {
-        const certColor = k.certificado === 'Vigente' ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800';
-        const isAttending = k.asistencia && k.asistencia[selectedDate] === true;
+        const esVencido = k.certificado === 'Vencido';
+        const certBadge = esVencido
+          ? `<span class="px-3 py-1 rounded-xl text-xs font-bold bg-rose-100 text-rose-800 border border-rose-200 flex items-center gap-1.5 w-fit"><i class="fa-solid fa-circle-exclamation text-rose-600"></i> VENCIDO</span>`
+          : `<span class="px-3 py-1 rounded-xl text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">Vigente</span>`;
 
-        tbody.innerHTML += `
-                    <tr class="hover:bg-slate-50 transition">
-                        <td class="p-4 font-medium text-slate-800">${k.name}<br><span class="text-xs text-slate-400 font-normal">${k.cedula}</span></td>
-                        <td class="p-4"><span class="bg-slate-100 text-slate-700 px-2 py-1 rounded text-xs font-medium">${k.turno}</span></td>
-                        <td class="p-4"><span class="px-2.5 py-1 rounded-full text-xs font-semibold ${certColor}">${k.certificado}</span></td>
-                        <td class="p-4">
-                            <label class="inline-flex items-center gap-2 cursor-pointer">
-                                <input type="checkbox" ${isAttending ? 'checked' : ''} onchange="toggleKitchenAttendance('${k.id}', this.checked)" class="w-4 h-4 text-brand-600 rounded accent-brand-600">
-                                <span class="text-xs ${isAttending ? 'text-emerald-700 font-bold' : 'text-slate-400'}">${isAttending ? 'PRESENTE' : 'Ausente'}</span>
-                            </label>
-                        </td>
-                        <td class="p-4 text-right space-x-3 actions-column">
-                            <button type="button" onclick="editKitchen('${k.id}')" title="Editar" class="text-slate-500 hover:text-brand-600 font-medium text-xs"><i class="fa-solid fa-pen-to-square"></i> Editar</button>
-                            <button type="button" onclick="deleteKitchen('${k.id}')" title="Eliminar" class="text-slate-400 hover:text-rose-600"><i class="fa-solid fa-trash"></i></button>
-                        </td>
-                    </tr>`;
+        const generoBadge = k.genero === 'Femenino'
+          ? `<span class="text-pink-600 bg-pink-50 border border-pink-200 px-2 py-0.5 rounded-lg text-[10px] font-bold inline-flex items-center gap-1"><i class="fa-solid fa-venus"></i> Femenino</span>`
+          : `<span class="text-blue-600 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded-lg text-[10px] font-bold inline-flex items-center gap-1"><i class="fa-solid fa-mars"></i> Masculino</span>`;
+
+        let rowHtml = `
+          <tr class="hover:bg-slate-50/80 transition">
+              <td class="p-4 font-bold text-slate-800">${k.name}<br><span class="text-xs text-slate-400 font-normal">Cédula: ${k.cedula}</span><br>${generoBadge}</td>
+              <td class="p-4"><span class="bg-amber-50 text-amber-800 border border-amber-200 px-3 py-1 rounded-xl text-xs font-bold">${k.turno}</span></td>
+              <td class="p-4">${certBadge}</td>`;
+
+        weekDays.forEach(day => {
+          const isAttending = k.asistencia && k.asistencia[day.dateStr] === true;
+          rowHtml += `
+            <td class="p-3 text-center">
+                <label class="inline-flex items-center justify-center cursor-pointer bg-slate-50 p-2 rounded-xl border border-slate-200 hover:bg-slate-100 transition">
+                    <input type="checkbox" ${isAttending ? 'checked' : ''} onchange="toggleKitchenAttendance('${k.id}', '${day.dateStr}', this.checked)" class="w-4 h-4 text-amber-600 rounded accent-amber-600 cursor-pointer" title="${day.formattedDate}">
+                </label>
+            </td>`;
+        });
+
+        rowHtml += `
+              <td class="p-4 text-right space-x-2 actions-column">
+                  <button type="button" onclick="editKitchen('${k.id}')" class="text-amber-700 bg-amber-50 hover:bg-amber-100 px-3 py-1.5 rounded-xl font-bold text-xs transition"><i class="fa-solid fa-pen-to-square"></i> Editar</button>
+                  <button type="button" onclick="deleteKitchen('${k.id}')" class="text-rose-600 bg-rose-50 hover:bg-rose-100 px-3 py-1.5 rounded-xl font-bold text-xs transition"><i class="fa-solid fa-trash"></i></button>
+              </td>
+          </tr>`;
+
+        tbody.innerHTML += rowHtml;
       });
     }
 
@@ -893,6 +1188,7 @@
       document.getElementById('kitchen-id').value = editObj ? editObj.id : '';
       document.getElementById('kitchen-name').value = editObj ? editObj.name : '';
       document.getElementById('kitchen-cedula').value = editObj ? editObj.cedula : '';
+      document.getElementById('kitchen-genero').value = editObj ? editObj.genero || 'Femenino' : 'Femenino';
       document.getElementById('kitchen-turno').value = editObj ? editObj.turno : 'Mañana';
       document.getElementById('kitchen-certificado').value = editObj ? editObj.certificado : 'Vigente';
       document.getElementById('modal-kitchen').classList.remove('hidden');
@@ -911,6 +1207,7 @@
       const data = {
         name: document.getElementById('kitchen-name').value,
         cedula: document.getElementById('kitchen-cedula').value,
+        genero: document.getElementById('kitchen-genero').value,
         turno: document.getElementById('kitchen-turno').value,
         certificado: document.getElementById('kitchen-certificado').value
       };
@@ -933,14 +1230,12 @@
       }
     }
 
-    async function toggleKitchenAttendance(id, isPresent) {
-      const selectedDate = document.getElementById('attendance-date').value || new Date().toISOString().split('T')[0];
-
+    async function toggleKitchenAttendance(id, dateStr, isPresent) {
       if (isDemoMode) {
         const k = demoData.kitchen.find(x => x.id === id);
         if (k) {
           if (!k.asistencia) k.asistencia = {};
-          k.asistencia[selectedDate] = isPresent;
+          k.asistencia[dateStr] = isPresent;
           renderKitchen(demoData.kitchen);
         }
       } else if (db && currentUser) {
@@ -948,7 +1243,7 @@
         const doc = await ref.get();
         if (doc.exists) {
           let ast = doc.data().asistencia || {};
-          ast[selectedDate] = isPresent;
+          ast[dateStr] = isPresent;
           await ref.update({ asistencia: ast });
           loadAllData();
         }
@@ -967,7 +1262,6 @@
       }
     }
 
-    // RENDERIZADO Y EDICIÓN - INVENTARIO
     function renderInventory(list) {
       const tbody = document.getElementById('inventory-table-body');
       tbody.innerHTML = '';
@@ -976,19 +1270,24 @@
         return;
       }
       list.forEach(i => {
+        const stockBajo = i.cantidad < 1;
+        const alertaBadge = stockBajo
+          ? `<span class="bg-rose-100 text-rose-800 font-bold px-3 py-1 rounded-xl text-xs border border-rose-200 flex items-center gap-1.5 w-fit"><i class="fa-solid fa-triangle-exclamation text-rose-600"></i> ¡TERMINADO!</span>`
+          : `<span class="bg-emerald-100 text-emerald-800 font-bold px-3 py-1 rounded-xl text-xs border border-emerald-200">Suficiente</span>`;
+
         tbody.innerHTML += `
-                    <tr class="hover:bg-slate-50 transition">
-                        <td class="p-4 font-medium text-slate-800">${i.nombre}</td>
-                        <td class="p-4"><span class="bg-indigo-50 text-indigo-700 px-2.5 py-1 rounded-full text-xs font-semibold">${i.categoria}</span></td>
-                        <td class="p-4 font-bold text-slate-900">${i.cantidad}</td>
-                        <td class="p-4 text-xs text-slate-500">${i.unidad}</td>
-                        <td class="p-4 text-right space-x-2 actions-column">
-                            <button type="button" onclick="adjustInventory('${i.id}', 5)" title="Sumar +5" class="text-emerald-600 hover:bg-emerald-50 p-1.5 rounded"><i class="fa-solid fa-plus"></i></button>
-                            <button type="button" onclick="adjustInventory('${i.id}', -5)" title="Restar -5" class="text-amber-600 hover:bg-amber-50 p-1.5 rounded"><i class="fa-solid fa-minus"></i></button>
-                            <button type="button" onclick="editInventory('${i.id}')" title="Editar" class="text-slate-500 hover:text-brand-600 p-1.5 rounded"><i class="fa-solid fa-pen-to-square"></i></button>
-                            <button type="button" onclick="deleteInventory('${i.id}')" title="Eliminar" class="text-slate-400 hover:text-rose-600 p-1.5 rounded"><i class="fa-solid fa-trash"></i></button>
-                        </td>
-                    </tr>`;
+          <tr class="${stockBajo ? 'bg-rose-50/40' : ''} hover:bg-slate-50/80 transition">
+              <td class="p-4 font-bold text-slate-800">${i.nombre}</td>
+              <td class="p-4"><span class="bg-teal-50 text-teal-800 border border-teal-200 px-3 py-1 rounded-xl text-xs font-bold">${i.categoria}</span></td>
+              <td class="p-4 font-extrabold ${stockBajo ? 'text-rose-600' : 'text-slate-900'}">${i.cantidad} ${i.unidad}</td>
+              <td class="p-4">${alertaBadge}</td>
+              <td class="p-4 text-right space-x-1.5 actions-column">
+                  <button type="button" onclick="adjustInventory('${i.id}', 5)" title="Sumar +5" class="text-emerald-700 bg-emerald-50 hover:bg-emerald-100 p-2 rounded-xl transition font-bold"><i class="fa-solid fa-plus"></i></button>
+                  <button type="button" onclick="adjustInventory('${i.id}', -5)" title="Restar -5" class="text-amber-700 bg-amber-50 hover:bg-amber-100 p-2 rounded-xl transition font-bold"><i class="fa-solid fa-minus"></i></button>
+                  <button type="button" onclick="editInventory('${i.id}')" class="text-blue-600 bg-blue-50 hover:bg-blue-100 p-2 rounded-xl transition font-bold"><i class="fa-solid fa-pen-to-square"></i></button>
+                  <button type="button" onclick="deleteInventory('${i.id}')" class="text-rose-600 bg-rose-50 hover:bg-rose-100 p-2 rounded-xl transition font-bold"><i class="fa-solid fa-trash"></i></button>
+              </td>
+          </tr>`;
       });
     }
 
@@ -1067,17 +1366,174 @@
       }
     }
 
+    function agregarFilaIngrediente(insumoIdVal = '', cantidadVal = '') {
+      const container = document.getElementById('ingredients-rows-container');
+      const rowId = 'ing_row_' + Date.now() + Math.random().toString(36).substring(2, 5);
+
+      let optionsHtml = '<option value="">Seleccionar insumo...</option>';
+      currentInventory.forEach(i => {
+        const selected = (i.id === insumoIdVal) ? 'selected' : '';
+        optionsHtml += `<option value="${i.id}" ${selected}>${i.nombre} (Stock: ${i.cantidad} ${i.unidad})</option>`;
+      });
+
+      const rowDiv = document.createElement('div');
+      rowDiv.id = rowId;
+      rowDiv.className = "flex items-center gap-2 bg-slate-50 p-2.5 rounded-2xl border border-slate-200 shadow-sm";
+      rowDiv.innerHTML = `
+        <select class="flex-1 text-xs p-2 border border-slate-300 rounded-xl bg-white ing-select font-medium" required>
+          ${optionsHtml}
+        </select>
+        <input type="number" step="0.1" placeholder="Cant." value="${cantidadVal}" class="w-20 text-xs p-2 border border-slate-300 rounded-xl bg-white ing-cant font-bold" required>
+        <button type="button" onclick="document.getElementById('${rowId}').remove()" class="text-rose-500 hover:text-rose-700 px-2 py-1 text-xs font-bold" title="Quitar insumo"><i class="fa-solid fa-trash"></i></button>
+      `;
+      container.appendChild(rowDiv);
+    }
+
+    async function procesarMenuCompleto() {
+      const plato = document.getElementById('menu-plato-name').value.trim();
+      if (!plato) {
+        alert('Por favor, ingresa el nombre del plato o menú.');
+        return;
+      }
+
+      const rows = document.querySelectorAll('#ingredients-rows-container > div');
+      if (rows.length === 0) {
+        alert('Agrega al menos un ingrediente para este menú.');
+        return;
+      }
+
+      let ingredientesDespacho = [];
+      let actualizacionesInventario = [];
+
+      for (let row of rows) {
+        const select = row.querySelector('.ing-select');
+        const inputCant = row.querySelector('.ing-cant');
+        const insumoId = select.value;
+        const cantGasto = Number(inputCant.value);
+
+        if (!insumoId) {
+          alert('Selecciona un insumo válido en todas las filas de ingredientes.');
+          return;
+        }
+        if (!cantGasto || cantGasto <= 0) {
+          alert('Ingresa una cantidad válida mayor a 0 en todos los ingredientes.');
+          return;
+        }
+
+        const insumo = currentInventory.find(i => i.id === insumoId);
+        if (!insumo) {
+          alert('El insumo seleccionado ya no existe en el inventario.');
+          return;
+        }
+
+        if (cantGasto > insumo.cantidad) {
+          alert(`¡Stock insuficiente para "${insumo.nombre}"! Stock actual: ${insumo.cantidad} ${insumo.unidad}, intentas gastar: ${cantGasto}.`);
+          return;
+        }
+
+        ingredientesDespacho.push({
+          insumoId: insumoId,
+          nombreInsumo: insumo.nombre,
+          cantidad: cantGasto,
+          unidad: insumo.unidad
+        });
+
+        actualizacionesInventario.push({
+          id: insumoId,
+          nuevaCantidad: Math.max(0, insumo.cantidad - cantGasto)
+        });
+      }
+
+      const fechaHoy = document.getElementById('attendance-date').value || new Date().toISOString().split('T')[0];
+      const logData = {
+        plato: plato,
+        ingredientes: ingredientesDespacho,
+        fecha: fechaHoy
+      };
+
+      if (isDemoMode) {
+        actualizacionesInventario.forEach(act => {
+          const invItem = demoData.inventory.find(i => i.id === act.id);
+          if (invItem) invItem.cantidad = act.nuevaCantidad;
+        });
+        demoData.menuLogs.push({ id: Date.now().toString(), ...logData });
+
+        document.getElementById('menu-plato-name').value = '';
+        document.getElementById('ingredients-rows-container').innerHTML = '';
+        agregarFilaIngrediente();
+        loadAllData();
+        alert('¡Menú procesado y stock descontado exitosamente!');
+      } else if (db && currentUser) {
+        try {
+          const batch = db.batch();
+          actualizacionesInventario.forEach(act => {
+            const ref = db.collection('users').doc(currentUser.uid).collection('inventory').doc(act.id);
+            batch.update(ref, { cantidad: act.nuevaCantidad });
+          });
+
+          const menuRef = db.collection('users').doc(currentUser.uid).collection('menuLogs').doc();
+          batch.set(menuRef, logData);
+
+          await batch.commit();
+
+          document.getElementById('menu-plato-name').value = '';
+          document.getElementById('ingredients-rows-container').innerHTML = '';
+          agregarFilaIngrediente();
+          loadAllData();
+          alert('¡Menú procesado y stock descontado exitosamente en la nube!');
+        } catch (err) {
+          alert('Error al procesar el menú: ' + err.message);
+        }
+      }
+    }
+
+    function renderMenuLogs(logs) {
+      const tbody = document.getElementById('menu-table-body');
+      if (!tbody) return;
+      tbody.innerHTML = '';
+      if (logs.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="4" class="p-6 text-center text-slate-400">No hay menús registrados.</td></tr>`;
+        return;
+      }
+      logs.forEach(log => {
+        let ingHtml = '<ul class="list-disc list-inside text-xs space-y-1">';
+        if (log.ingredientes && Array.isArray(log.ingredientes)) {
+          log.ingredientes.forEach(ing => {
+            ingHtml += `<li><b>${ing.nombreInsumo}:</b> <span class="text-rose-600 font-bold">-${ing.cantidad} ${ing.unidad}</span></li>`;
+          });
+        }
+        ingHtml += '</ul>';
+
+        tbody.innerHTML += `
+          <tr class="hover:bg-slate-50/85 transition">
+              <td class="p-4 font-bold text-slate-800">${log.plato}</td>
+              <td class="p-4">${ingHtml}</td>
+              <td class="p-4 text-xs font-medium text-slate-500">${log.fecha || 'N/D'}</td>
+              <td class="p-4 text-right actions-column">
+                  <button type="button" onclick="eliminarMenuLog('${log.id}')" class="text-rose-600 bg-rose-50 hover:bg-rose-100 p-2 rounded-xl transition font-bold" title="Eliminar"><i class="fa-solid fa-trash"></i></button>
+              </td>
+          </tr>`;
+      });
+    }
+
+    async function eliminarMenuLog(id) {
+      if (confirm('¿Eliminar este registro de menú?')) {
+        if (isDemoMode) {
+          demoData.menuLogs = demoData.menuLogs.filter(l => l.id !== id);
+          loadAllData();
+        } else if (db && currentUser) {
+          await db.collection('users').doc(currentUser.uid).collection('menuLogs').doc(id).delete();
+          loadAllData();
+        }
+      }
+    }
+
     function updateDashboardStatsDynamic(students, kitchen, inventory) {
       document.getElementById('stat-estudiantes').innerText = students.length;
       document.getElementById('stat-cocina').innerText = kitchen.length;
       document.getElementById('stat-inventario').innerText = inventory.length;
-      if (students.length > 0) {
-        let sum = students.reduce((acc, s) => acc + (s.peso / (s.talla * s.talla)), 0);
-        document.getElementById('stat-imc').innerText = (sum / students.length).toFixed(1);
-      }
     }
 
-    // FUNCIONALIDAD DE IMPRESIÓN OFICIAL
     function printReport(moduleName) {
       const printTitle = document.getElementById('print-title');
       const printDate = document.getElementById('print-date');
@@ -1088,12 +1544,15 @@
       printUser.innerText = currentUser ? currentUser.email : 'Usuario Autorizado';
 
       if (moduleName === 'Estudiantes') {
-        printTitle.innerText = "EXPEDIENTE Y DIAGNÓSTICO NUTRICIONAL DE ESTUDIANTES (5TO AÑO)";
+        printTitle.innerText = `EXPEDIENTE Y DIAGNÓSTICO NUTRICIONAL DE ESTUDIANTES (${selectedStudentYear.toUpperCase()})`;
       } else if (moduleName === 'Cocina') {
-        const fecha = document.getElementById('attendance-date').value;
-        printTitle.innerText = `CONTROL Y PLANILLA DE ASISTENCIA - PERSONAL DE COCINA (${fecha})`;
+        const refDateStr = document.getElementById('attendance-date').value;
+        const weekDays = getWeekDays(refDateStr);
+        printTitle.innerText = `CONTROL DE ASISTENCIA SEMANAL (LUNES A VIERNES) - PERSONAL DE COCINA\nSemana del ${weekDays[0].formattedDate} al ${weekDays[4].formattedDate}`;
       } else if (moduleName === 'Inventario') {
-        printTitle.innerText = "INVENTARIO Y AUDITORÍA DIARIA DE ALIMENTOS";
+        printTitle.innerText = "INVENTARIO Y AUDITORÍA DE ALIMENTOS";
+      } else if (moduleName === 'Menu') {
+        printTitle.innerText = "PLANIFICADOR DE MENÚ Y DESPACHO DE ALIMENTOS";
       }
 
       window.print();
